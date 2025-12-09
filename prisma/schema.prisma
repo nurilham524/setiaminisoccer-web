@@ -1,0 +1,54 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  // Kita hapus 'output' custom agar kembali ke default (node_modules)
+  // Ini memudahkan import nanti cukup: import { PrismaClient } from '@prisma/client'
+}
+
+datasource db {
+  provider = "postgresql"
+  // Gunakan fungsi env() untuk membaca variabel dari file .env
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    @default("USER")
+  createdAt DateTime  @default(now())
+
+  bookings  Booking[]
+}
+
+model Field {
+  id           String    @id @default(uuid())
+  name         String
+  type         String
+  pricePerHour Int
+  description  String?
+  imageUrl     String?
+
+  bookings     Booking[]
+}
+
+model Booking {
+  id            String   @id @default(uuid())
+  userId        String?  // Ubah jadi OPTIONAL (tambah tanda tanya) agar bisa Guest Checkout
+  fieldId       String
+  date          DateTime
+  startTime     String
+  endTime       String
+  status        String   @default("PENDING")
+  totalPrice    Int      @default(0)
+  createdAt     DateTime @default(now())
+  
+  // DATA TAMU (Baru)
+  customerName  String?  // Menyimpan nama penyewa (misal: "Budi")
+  customerPhone String?  // Menyimpan WA (misal: "0812...")
+
+  user       User?    @relation(fields: [userId], references: [id]) // Tambah '?' karena userId jadi optional
+  field      Field    @relation(fields: [fieldId], references: [id])
+}
