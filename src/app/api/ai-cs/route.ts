@@ -2,23 +2,38 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// 1. MEMAKSA ROUTE INI JADI DINAMIS (Anti-Cache/Static)
+export const dynamic = 'force-dynamic'; 
+
+// 2. MENANGANI PREFLIGHT CHECK (Agar tidak dianggap 405 oleh browser/Fonnte)
+export async function OPTIONS() {
+  return NextResponse.json({}, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Fonnte mengirimkan data dalam format: { sender: "628xxx", message: "halo", ... }
-    const userMessage = body.message;
-    const userPhone = body.sender; // Kita butuh ini untuk membalas ke orang yang tepat
+    // Log data masuk untuk debugging di Vercel Logs
+    console.log("📥 [POST] Data masuk:", JSON.stringify(body));
 
-    // Cek jika pesan berasal dari diri sendiri (untuk mencegah looping) atau kosong
+    const userMessage = body.message;
+    const userPhone = body.sender; 
+
     if (!userMessage || !userPhone) {
         return NextResponse.json({ status: "No message or sender" });
     }
 
-    // --- LOGIKA GEMINI (SAMA SEPERTI SEBELUMNYA) ---
+    // --- LOGIKA AI ---
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     
-    // Ambil Data Lapangan
+    // Ambil data lapangan terbaru
     const fields = await prisma.field.findMany({
         select: { name: true, type: true, pricePerHour: true, description: true }
     });
@@ -27,8 +42,7 @@ export async function POST(request: Request) {
         `- ${f.name} (${f.type}): Rp${f.pricePerHour.toLocaleString('id-ID')}/jam. Info: ${f.description}`
     ).join("\n");
 
-    const systemInstruction = `
-      Kamu adalah "Coach AI", Asisten Virtual untuk 'Sport Center Mini Soccer'.
+    const systemInstruction = `Kamu adalah "Coach AI", Asisten Virtual untuk 'Sport Center Mini Soccer'.
       
       GAYA KOMUNIKASI:
       - Ramah, energik, dan membantu.
@@ -45,10 +59,8 @@ export async function POST(request: Request) {
       ATURAN PENTING:
       1. Jika user bertanya harga/fasilitas, jawab berdasarkan data di atas.
       2. Jika user ingin booking, JANGAN minta transfer. Arahkan ke website: https://setiaminisoccer-web.vercel.app/ (atau link localhost).
-      3. Jika kamu tidak tahu jawabannya, arahkan ke Admin WA: 08123456789.
-    `;
+      3. Jika kamu tidak tahu jawabannya, arahkan ke Admin WA: 08123456789.`;
 
-    // GUNAKAN MODEL YANG BENAR (1.5-flash)
     const model = genAI.getGenerativeModel({ 
         model: "gemini-1.5-flash", 
         systemInstruction: systemInstruction 
@@ -58,12 +70,11 @@ export async function POST(request: Request) {
     const response = await result.response;
     const aiReply = response.text();
 
-    // --- BAGIAN PENTING: KIRIM BALASAN KEMBALI KE FONNTE ---
-    // Kita harus "menembak" API Fonnte untuk mengirim pesan WA
-    await fetch('https://api.fonnte.com/send', {
+    // --- KIRIM BALIK KE FONNTE ---
+    const fonnteRes = await fetch('https://api.fonnte.com/send', {
         method: 'POST',
         headers: {
-            'Authorization': process.env.FONNTE_TOKEN || '', // Masukkan Token Fonnte di .env
+            'Authorization': process.env.FONNTE_TOKEN || '', 
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -71,12 +82,15 @@ export async function POST(request: Request) {
             message: aiReply,
         })
     });
+    
+    // Cek hasil kirim ke Fonnte (Opsional, buat debug)
+    const fonnteData = await fonnteRes.json();
+    console.log("📤 [FONNTE] Status kirim:", fonnteData);
 
-    // Return sukses ke Fonnte agar tidak dikirim ulang (retry)
-    return NextResponse.json({ status: true });
+    return NextResponse.json({ status: true, detail: "Pesan terproses" });
 
   } catch (error) {
-    console.error("Error Processing Chatbot:", error);
-    return NextResponse.json({ status: false, error: error }, { status: 500 });
+    console.error("🔥 ERROR:", error);
+    return NextResponse.json({ status: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }
