@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
-import AdminBookingTable from "@/components/AdminBookingTable";
+import AdminBookingTable from "@/components/AdminBookingTable"; // Import file dari Langkah 2
+import AdminSchedule from "@/components/AdminSchedule"; // Import file dari Langkah 4
 
-// Fungsi untuk format uang (Rupiah)
 const formatRupiah = (number: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -12,155 +12,96 @@ const formatRupiah = (number: number) => {
   }).format(number);
 };
 
-// Fungsi untuk format tanggal (Contoh: Senin, 09 Des 2025)
-const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
-
 export default async function AdminDashboard() {
-  // 1. Fetch Data Utama
+  // 1. Ambil Data Terbaru untuk Tabel Riwayat
   const bookings = await prisma.booking.findMany({
-    orderBy: { createdAt: "desc" }, // Yang terbaru paling atas
-    include: {
-      field: true, // Ambil data nama lapangan
-      user: true,  // Ambil data nama user
-    },
+    orderBy: { createdAt: "desc" },
+    take: 20, // Batasi 20 transaksi terakhir agar ringan
+    include: { field: true, user: true },
   });
 
+  // 2. Ambil Data Lapangan untuk dikirim ke Kalender
   const fields = await prisma.field.findMany();
 
-  // 2. Hitung Statistik (Business Intelligence Sederhana)
-const calculateBookingTotal = (b: any) => {
-    // 1. Prioritaskan harga yang tersimpan di database (Historical Data)
-    if (b.totalPrice && b.totalPrice > 0) {
-        return b.totalPrice;
-    }
-
-    // 2. Jika database kosong, baru hitung manual (Fallback)
-    const startParts = b.startTime?.split(":").map(Number) ?? [0];
-    const endParts = b.endTime?.split(":").map(Number) ?? [0];
-    // ... (sisa logika Anda sama)
-};
-
-  const totalRevenue = bookings
-    .filter((b) => b.status === "CONFIRMED")
-    .reduce((sum, b) => sum + calculateBookingTotal(b), 0);
-  
-  const totalBookings = bookings.length;
-  const pendingBookings = bookings.filter((b) => b.status === "PENDING").length;
-
-  // 3. Logika Visualisasi Jadwal Kosong (Hari Ini)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Filter booking KHUSUS hari ini & Confirmed
-  const todaysBookings = bookings.filter((b) => {
-    const bookingDate = new Date(b.date);
-    bookingDate.setHours(0, 0, 0, 0);
-    return bookingDate.getTime() === today.getTime() && b.status === "CONFIRMED";
+  // 3. Hitung Statistik Pendapatan
+  // Kita ambil SEMUA booking confirmed untuk hitung total duit
+  const allConfirmedBookings = await prisma.booking.findMany({
+    where: { OR: [{ status: "CONFIRMED" }, { status: "LUNAS" }] }
   });
 
-  // Jam Operasional (08:00 - 22:00)
-  const timeSlots = [
-    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", 
-    "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"
-  ];
+  const totalRevenue = allConfirmedBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+  
+  // Hitung jumlah booking pending
+  const pendingCount = await prisma.booking.count({
+    where: { status: "PENDING" }
+  });
+
+  // Hitung total booking lifetime
+  const totalCount = await prisma.booking.count();
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* SIDEBAR SEDERHANA */}
-      <aside className="w-64 bg-gray-900 text-white p-6 hidden md:flex flex-col justify-between">
+    <div className="min-h-screen bg-gray-50 flex font-sans">
+      {/* SIDEBAR */}
+      <aside className="w-64 bg-gray-900 text-white p-6 hidden md:flex flex-col justify-between sticky top-0 h-screen">
         <div>
-            <h1 className="text-2xl font-bold mb-8 text-green-400 tracking-wider">ADMIN PANEL</h1>
-            <nav className="space-y-4">
-            <Link href="/admin" className="block py-2 px-4 bg-gray-800 rounded text-green-400 font-bold">
-                Dashboard
+            <h1 className="text-2xl font-extrabold mb-10 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 tracking-wider">
+                ADMIN PANEL
+            </h1>
+            <nav className="space-y-3">
+            <Link href="/admin" className="flex items-center gap-3 py-3 px-4 bg-gray-800 rounded-lg text-green-400 font-bold shadow-lg shadow-green-900/20">
+                📊 Dashboard
             </Link>
-            <Link href="/" className="block py-2 px-4 hover:bg-gray-800 rounded text-gray-400 transition">
-                Lihat Website Utama
+            <Link href="/" className="flex items-center gap-3 py-3 px-4 hover:bg-gray-800 rounded-lg text-gray-400 transition hover:text-white">
+                🌍 Website Utama
             </Link>
             </nav>
         </div>
-
-        {/* TOMBOL LOGOUT (Dipasang Disini) */}
-        <div className="mt-8 border-t border-gray-800 pt-4">
+        <div className="border-t border-gray-800 pt-6">
             <LogoutButton />
         </div>
       </aside>
 
       {/* KONTEN UTAMA */}
       <main className="flex-1 p-8 overflow-y-auto">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard Ringkasan</h2>
+        <header className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800">Overview Bisnis</h2>
+            <div className="text-sm text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border">
+                Halo, Admin 👋
+            </div>
+        </header>
 
-        {/* 1. STATS CARDS */}
+        {/* 1. KARTU STATISTIK */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Card Pendapatan */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-            <p className="text-gray-500 text-sm font-medium">Total Pendapatan</p>
+          {/* Pendapatan */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Pendapatan</p>
             <p className="text-3xl font-bold text-gray-800 mt-2">{formatRupiah(totalRevenue)}</p>
+            <div className="mt-4 h-1 w-full bg-green-100 rounded-full"><div className="h-1 bg-green-500 w-[70%] rounded-full"></div></div>
           </div>
-          {/* Card Total Booking */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-            <p className="text-gray-500 text-sm font-medium">Total Booking</p>
-            <p className="text-3xl font-bold text-gray-800 mt-2">{totalBookings} <span className="text-base font-normal text-gray-400">pesanan</span></p>
+          
+          {/* Total Transaksi */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Booking</p>
+            <p className="text-3xl font-bold text-gray-800 mt-2">{totalCount}</p>
           </div>
-          {/* Card Pending */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
-            <p className="text-gray-500 text-sm font-medium">Perlu Konfirmasi</p>
-            <p className="text-3xl font-bold text-gray-800 mt-2">{pendingBookings} <span className="text-base font-normal text-gray-400">pesanan</span></p>
+
+          {/* Menunggu Konfirmasi */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Perlu Konfirmasi</p>
+            <div className="flex items-end gap-2">
+                <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingCount}</p>
+                <span className="text-sm text-yellow-600 mb-1">pesanan</span>
+            </div>
           </div>
         </div>
 
-        {/* 2. LIVE AVAILABILITY (JADWAL KOSONG HARI INI) */}
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-800">Status Lapangan Hari Ini ({formatDate(today)})</h3>
-                <div className="flex gap-4 text-sm">
-                    <span className="flex items-center gap-2"><div className="w-3 h-3 bg-green-100 border border-green-500 rounded"></div> Kosong</span>
-                    <span className="flex items-center gap-2"><div className="w-3 h-3 bg-red-500 rounded"></div> Terisi</span>
-                </div>
-            </div>
+        {/* 2. JADWAL INTERAKTIF (FITUR BARU) */}
+        <AdminSchedule fields={fields} />
 
-            <div className="space-y-6">
-                {fields.map(field => (
-                    <div key={field.id}>
-                        <h4 className="font-semibold text-gray-700 mb-2">{field.name} ({field.type})</h4>
-                        <div className="grid grid-cols-8 md:grid-cols-15 gap-2">
-                            {timeSlots.map(time => {
-                                // Cek apakah jam ini ada di booking hari ini
-                                const isBooked = todaysBookings.some(
-                                    b => b.fieldId === field.id && b.startTime === time
-                                );
-                                
-                                return (
-                                    <div 
-                                        key={time}
-                                        className={`
-                                            text-xs py-2 rounded text-center font-medium border
-                                            ${isBooked 
-                                                ? 'bg-red-500 text-white border-red-600' 
-                                                : 'bg-green-50 text-green-700 border-green-200'}
-                                        `}
-                                    >
-                                        {time}
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-
-        {/* 3. TABEL DATA BOOKING */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b">
-            <h3 className="text-xl font-bold text-gray-800">Riwayat Booking Terbaru</h3>
+        {/* 3. TABEL DATA TERBARU */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+            <h3 className="text-lg font-bold text-gray-800">Riwayat 20 Booking Terakhir</h3>
           </div>
           <div className="overflow-x-auto">
             <AdminBookingTable bookings={bookings} />
