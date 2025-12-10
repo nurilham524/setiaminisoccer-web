@@ -4,6 +4,8 @@ import LogoutButton from "@/components/LogoutButton";
 import AdminBookingTable from "@/components/AdminBookingTable"; // Import file dari Langkah 2
 import AdminSchedule from "@/components/JadwalAdmin"; // Import file dari Langkah 4
 
+export const dynamic = 'force-dynamic'; // Pastikan halaman ini selalu dinamis
+
 const formatRupiah = (number: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
