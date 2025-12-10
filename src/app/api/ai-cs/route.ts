@@ -1,30 +1,32 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // Sesuaikan path jika perlu (misal ../../lib/prisma)
+import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
+    const body = await request.json();
+    
+    // Fonnte mengirimkan data dalam format: { sender: "628xxx", message: "halo", ... }
+    const userMessage = body.message;
+    const userPhone = body.sender; // Kita butuh ini untuk membalas ke orang yang tepat
 
-    if (!message) {
-      return NextResponse.json({ reply: "Maaf, saya tidak menangkap pesan Anda." });
+    // Cek jika pesan berasal dari diri sendiri (untuk mencegah looping) atau kosong
+    if (!userMessage || !userPhone) {
+        return NextResponse.json({ status: "No message or sender" });
     }
 
-    // 1. Inisialisasi Gemini
-    // Pastikan API Key sudah ada di .env
+    // --- LOGIKA GEMINI (SAMA SEPERTI SEBELUMNYA) ---
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     
-    // 2. Ambil Data Lapangan dari Database (Real-time Context)
+    // Ambil Data Lapangan
     const fields = await prisma.field.findMany({
         select: { name: true, type: true, pricePerHour: true, description: true }
     });
     
-    // Format data menjadi string agar bisa dibaca AI
     const fieldsContext = fields.map(f => 
         `- ${f.name} (${f.type}): Rp${f.pricePerHour.toLocaleString('id-ID')}/jam. Info: ${f.description}`
     ).join("\n");
 
-    // 3. Definisikan Karakter AI (System Instruction)
     const systemInstruction = `
       Kamu adalah "Coach AI", Asisten Virtual untuk 'Sport Center Mini Soccer'.
       
@@ -42,26 +44,39 @@ export async function POST(request: Request) {
 
       ATURAN PENTING:
       1. Jika user bertanya harga/fasilitas, jawab berdasarkan data di atas.
-      2. Jika user ingin booking, JANGAN minta transfer. Arahkan ke website: https://minisoccer-web.vercel.app/ (atau link localhost).
+      2. Jika user ingin booking, JANGAN minta transfer. Arahkan ke website: https://setiaminisoccer-web.vercel.app/ (atau link localhost).
       3. Jika kamu tidak tahu jawabannya, arahkan ke Admin WA: 08123456789.
     `;
 
-    // 4. Konfigurasi Model
-    // Gunakan "gemini-1.5-flash" (standar cepat) atau sesuaikan jika Anda punya akses ke versi "2.5" spesifik
+    // GUNAKAN MODEL YANG BENAR (1.5-flash)
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash", 
+        model: "gemini-1.5-flash", 
         systemInstruction: systemInstruction 
     });
 
-    // 5. Kirim Pesan User ke AI
-    const result = await model.generateContent(message);
+    const result = await model.generateContent(userMessage);
     const response = await result.response;
     const aiReply = response.text();
 
-    return NextResponse.json({ reply: aiReply });
+    // --- BAGIAN PENTING: KIRIM BALASAN KEMBALI KE FONNTE ---
+    // Kita harus "menembak" API Fonnte untuk mengirim pesan WA
+    await fetch('https://api.fonnte.com/send', {
+        method: 'POST',
+        headers: {
+            'Authorization': process.env.FONNTE_TOKEN || '', // Masukkan Token Fonnte di .env
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            target: userPhone,
+            message: aiReply,
+        })
+    });
+
+    // Return sukses ke Fonnte agar tidak dikirim ulang (retry)
+    return NextResponse.json({ status: true });
 
   } catch (error) {
-    console.error("Gemini Error:", error);
-    return NextResponse.json({ reply: "Maaf, Coach AI sedang pemanasan (Server Error)." });
+    console.error("Error Processing Chatbot:", error);
+    return NextResponse.json({ status: false, error: error }, { status: 500 });
   }
 }
