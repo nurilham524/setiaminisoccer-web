@@ -2,8 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
 import AdminBookingTable from "@/components/AdminBookingTable"; // Import file dari Langkah 2
-import AdminSchedule from "@/components/JadwalAdmin"; 
-// Import file dari Langkah 4
+import AdminSchedule from "@/components/JadwalAdmin"; // Import file dari Langkah 4
 
 const formatRupiah = (number: number) => {
   return new Intl.NumberFormat("id-ID", {
