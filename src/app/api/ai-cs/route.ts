@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       3. Jika kamu tidak tahu jawabannya, arahkan ke Admin WA: 08123456789.`;
 
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash", 
+        model: "gemini-2.5-flash", 
         systemInstruction: systemInstruction 
     });
 
