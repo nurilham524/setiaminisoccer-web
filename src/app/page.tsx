@@ -16,7 +16,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between p-4">
           <Link href="/" className="flex items-center space-x-2">
             <span className="self-center text-2xl font-extrabold whitespace-nowrap text-white tracking-tighter">
-              ⚡ SPORT CENTER
+              ⚡ SETIA MINISOCCER
             </span>
           </Link>
           <div className="flex md:order-2 space-x-3 gap-4">
@@ -25,12 +25,6 @@ export default async function Home() {
                 className="text-white bg-transparent border border-white/30 hover:bg-white hover:text-black focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 transition"
             >
               🔍 Cek Pesanan
-            </Link>
-            <Link 
-                href="/admin"
-                className="text-gray-400 hover:text-white font-medium text-sm px-3 py-2.5 transition"
-            >
-              Admin
             </Link>
           </div>
         </div>
@@ -165,7 +159,7 @@ export default async function Home() {
       <footer className="bg-black text-white py-12 border-t border-gray-900">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-                <h3 className="text-2xl font-extrabold mb-4 italic">⚡ SPORT CENTER</h3>
+                <h3 className="text-2xl font-extrabold mb-4 italic">⚡ SETIA MINISOCCER</h3>
                 <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
                     Platform booking mini soccer modern. Pengalaman bermain bola profesional untuk semua kalangan.
                 </p>
@@ -188,7 +182,7 @@ export default async function Home() {
             </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-12 pt-8 border-t border-gray-900 text-center text-xs text-gray-600">
-            © 2025 Sport Center Booking System. Built with Next.js & Prisma.
+            © 2025 Setia Minisoccer Booking System. Build by Rs
         </div>
       </footer>
 
