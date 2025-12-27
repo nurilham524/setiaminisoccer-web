@@ -8,8 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Gunakan fungsi env() untuk membaca variabel dari file .env
-  url      = env("DATABASE_URL")
+  // Connection URL is now configured in prisma.config.ts
 }
 
 model User {
