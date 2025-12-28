@@ -13,7 +13,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* 1. NAVBAR */}
-      <nav className="fixed top-0 z-[100] w-full border-b border-gray-200 bg-white backdrop-blur-md">
+      <nav className="fixed top-0 z-100 w-full border-b border-gray-200 bg-white backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4 py-0">
           <Link href="/" className="flex items-center space-x-2">
             <span className="self-center text-2xl font-extrabold whitespace-nowrap text-white tracking-tighter">
@@ -40,7 +40,7 @@ export default async function Home() {
         <div className="px-4 mt-16 w-1/2">
           <h1 className="mb-6 text-5xl font-extrabold tracking-tight leading-none text-gray-400 md:text-7xl drop-shadow-lg">
             SETIA <br />{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-500">
               MINI SOCCER
             </span>
           </h1>
@@ -291,7 +291,7 @@ export default async function Home() {
         href="https://wa.me/6285117692051?text=Halo%20Admin,%20saya%20tertarik%20booking%20lapangan."
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-[100] group"
+        className="fixed bottom-6 right-6 z-100 group"
         aria-label="Chat via WhatsApp"
       >
         <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-white text-gray-800 text-xs font-bold px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">

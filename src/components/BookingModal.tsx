@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState } from "react";
@@ -17,7 +18,6 @@ export default function BookingModal({
   open,
   onClose,
   fieldId,
-  fieldName,
   date,
   time,
   price,
@@ -63,7 +63,7 @@ export default function BookingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-md relative animate-fadeIn">
         <div className="flex items-center justify-between px-4 py-2 border-b">
           <h2 className="m-0 font-medium mb-2 text-gray-800">
