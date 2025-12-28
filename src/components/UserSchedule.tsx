@@ -6,6 +6,7 @@ import "react-day-picker/dist/style.css";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { getBookingsByDate } from "@/app/actions/getBookings";
+import BookingModal from "./BookingModal";
 
 type Field = { id: string; name: string; type: string };
 type BookingSimple = { fieldId: string; startTime: string; status: string };
@@ -16,6 +17,14 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
   );
   const [bookings, setBookings] = useState<BookingSimple[]>([]);
   const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<{
+    fieldId: string;
+    fieldName: string;
+    date: string;
+    time: string;
+    price: number;
+  } | null>(null);
 
   const timeSlots = [
     "07:00",
@@ -50,6 +59,29 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
       fetchBookings();
     }
   }, [selectedDate]);
+
+  // Fungsi untuk menentukan harga berdasarkan jam
+  const getPrice = (t: string) => {
+    if (
+      [
+        "07:00",
+        "08:00",
+        "09:00",
+        "10:00",
+        "11:00",
+        "12:00",
+        "13:00",
+        "14:00",
+        "15:00",
+      ].includes(t)
+    )
+      return 350000;
+    if (["16:00", "17:00", "18:00"].includes(t)) return 600000;
+    if (t === "19:00") return 500000;
+    if (["20:00", "21:00"].includes(t)) return 800000;
+    if (["22:00", "23:00"].includes(t)) return 600000;
+    return 0;
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4">
@@ -145,52 +177,43 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
                           b.startTime === time &&
                           (b.status === "CONFIRMED" || b.status === "LUNAS")
                       );
-                      // Fungsi untuk menentukan harga berdasarkan jam
-                      const getPrice = (t: string) => {
-                        if (
-                          [
-                            "07:00",
-                            "08:00",
-                            "09:00",
-                            "10:00",
-                            "11:00",
-                            "12:00",
-                            "13:00",
-                            "14:00",
-                            "15:00",
-                          ].includes(t)
-                        )
-                          return "350K";
-                        if (["16:00", "17:00", "18:00"].includes(t))
-                          return "600K";
-                        if (t === "19:00") return "500K";
-                        if (["20:00", "21:00"].includes(t)) return "800K";
-                        if (["22:00", "23:00"].includes(t)) return "600K";
-                        return "";
-                      };
+                      const price = getPrice(time);
 
                       return (
                         <div key={time} className="flex flex-col items-center">
-                          <div
+                          <button
+                            disabled={isBooked}
                             className={`
-            relative group text-[10px] sm:text-xs py-2 w-full rounded-lg text-center font-bold transition-all cursor-default select-none
-            ${
-              isBooked
-                ? "bg-red-50 text-red-400 opacity-50 line-through decoration-red-400"
-                : "bg-blue-500 text-white shadow-lg hover:bg-blue-600 hover:scale-110"
-            }
-          `}
+                        relative group text-[10px] sm:text-xs py-2 w-full rounded-lg text-center font-bold transition-all select-none
+                        ${
+                          isBooked
+                            ? "bg-red-50 text-red-400 opacity-50 line-through decoration-red-400 cursor-not-allowed"
+                            : "bg-blue-500 text-white shadow-lg hover:bg-blue-600 hover:scale-110 cursor-pointer"
+                        }
+                      `}
+                            onClick={() => {
+                              if (!isBooked && selectedDate) {
+                                setModalData({
+                                  fieldId: field.id,
+                                  fieldName: field.name,
+                                  date: format(selectedDate, "yyyy-MM-dd"),
+                                  time,
+                                  price,
+                                });
+                                setModalOpen(true);
+                              }
+                            }}
                           >
                             {time}
                             {/* Tooltip Hover (Hanya jika tersedia) */}
                             {!isBooked && (
                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-20">
-                                Klik Booking
+                                Booking Slot
                               </div>
                             )}
-                          </div>
+                          </button>
                           <div className="text-[9px] sm:text-xs text-gray-400 text-center font-semibold mt-1">
-                            {getPrice(time)}
+                            {price ? `Rp ${price / 1000}K` : ""}
                           </div>
                         </div>
                       );
@@ -202,6 +225,22 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
           )}
         </div>
       </div>
+
+      {modalOpen && modalData && (
+        <BookingModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          fieldId={modalData.fieldId}
+          fieldName={modalData.fieldName}
+          date={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
+          time={modalData.time}
+          price={modalData.price}
+          onBooked={() => {
+            setModalOpen(false);
+            // Optionally refresh bookings here
+          }}
+        />
+      )}
     </div>
   );
 }
