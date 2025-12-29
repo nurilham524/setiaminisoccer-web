@@ -12,7 +12,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      {/* 1. NAVBAR */}
       <nav className="fixed top-0 z-100 w-full border-b border-gray-200 bg-white backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4 py-0">
           <Link href="/" className="flex items-center space-x-2">
@@ -26,7 +25,7 @@ export default async function Home() {
           </Link>
           <div className="flex md:order-2 space-x-3 gap-4">
             <Link
-              href="#booking-area"
+              href="#live-schedule"
               className="text-white font-bold bg-blue-500 border border-gray-200 hover:bg-blue-600 hover:text-white focus:outline-none rounded-lg text-sm px-5 py-2.5 transition"
             >
               Book Now
@@ -35,7 +34,6 @@ export default async function Home() {
         </div>
       </nav>
 
-      {/* 2. HERO SECTION */}
       <section className="flex items-center min-h-screen max-w-7xl mx-auto">
         <div className="px-4 mt-16 w-1/2">
           <h1 className="mb-6 text-5xl font-extrabold tracking-tight leading-none text-gray-400 md:text-7xl drop-shadow-lg">
@@ -69,7 +67,6 @@ export default async function Home() {
 
       <PromoCarousel />
 
-      {/* 4. FEATURES */}
       <section className="pt-24 pb-44 bg-gray-50 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -126,7 +123,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 3. NEW FEATURE: LIVE SCHEDULE CHECKER */}
       <section
         id="live-schedule"
         className="py-20 bg-white relative -mt-20 z-20"
@@ -136,14 +132,12 @@ export default async function Home() {
             Real-time Availability
           </span>
           <h2 className="text-3xl font-bold text-gray-900 mt-2">
-            Cek Slot Kosong Hari Ini
+            Info Lapangan Tersedia
           </h2>
         </div>
-        {/* Panggil Komponen Jadwal User Disini */}
         <UserSchedule fields={fields} />
       </section>
 
-      {/* 5. BOOKING LIST */}
       <section id="booking-area" className="py-24 bg-white relative">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -226,7 +220,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 6. FOOTER */}
       <footer className="bg-white text-gray-600 py-12 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
@@ -286,7 +279,6 @@ export default async function Home() {
         </div>
       </footer>
 
-      {/* WHATSAPP BUTTON */}
       <a
         href="https://wa.me/6285117692051?text=Halo%20Admin,%20saya%20tertarik%20booking%20lapangan."
         target="_blank"

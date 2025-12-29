@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 type BookingModalProps = {
   open: boolean;
@@ -31,7 +32,12 @@ export default function BookingModal({
 
   const handleBooking = async () => {
     if (!name || !phone) {
-      alert("Mohon isi nama dan nomor WhatsApp!");
+      Swal.fire({
+        icon: "warning",
+        title: "Lengkapi Data!",
+        text: "Mohon isi nama dan nomor WhatsApp!",
+        confirmButtonColor: "#2563eb",
+      });
       return;
     }
     setIsSubmitting(true);
@@ -50,13 +56,23 @@ export default function BookingModal({
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Gagal booking");
-      alert("✅ BOOKING SUKSES! Mohon datang tepat waktu.");
+      await Swal.fire({
+        icon: "success",
+        title: "Booking Sukses!",
+        text: "✅ BOOKING SUKSES! Mohon datang tepat waktu.",
+        confirmButtonColor: "#2563eb",
+      });
       setName("");
       setPhone("");
       onClose();
       onBooked && onBooked();
     } catch (error: any) {
-      alert(`❌ GAGAL: ${error.message}`);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Booking",
+        text: error.message,
+        confirmButtonColor: "#2563eb",
+      });
     } finally {
       setIsSubmitting(false);
     }

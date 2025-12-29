@@ -37,7 +37,7 @@ model Field {
 model Booking {
   id            String   @id @default(uuid())
   userId        String?  // Ubah jadi OPTIONAL (tambah tanda tanya) agar bisa Guest Checkout
-  fieldId       String
+  fieldId        String
   date          DateTime
   startTime     String
   endTime       String
