@@ -4,12 +4,20 @@ import { prisma } from "../../../lib/prisma"; // Sesuaikan path
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    // 1. TERIMA DATA BARU (customerName, customerPhone)
-    const { fieldId, date, startTime, price, customerName, customerPhone } = body;
+    // 1. TERIMA DATA BARU (customerName, customerPhone, status)
+    const {
+      fieldId,
+      date,
+      startTime,
+      price,
+      customerName,
+      customerPhone,
+      status = "PENDING",
+    } = body;
 
     if (!fieldId || !date || !startTime || !customerName || !customerPhone) {
       return NextResponse.json(
-        { error: "Data tidak lengkap. Nama & WA wajib diisi." }, 
+        { error: "Data tidak lengkap. Nama & WA wajib diisi." },
         { status: 400 }
       );
     }
@@ -17,14 +25,16 @@ export async function POST(request: Request) {
     const bookingDate = new Date(date);
     bookingDate.setHours(0, 0, 0, 0);
 
-    // Cek Bentrok
+    // Cek Bentrok (hanya untuk status CONFIRMED/LUNAS)
     const existingBooking = await prisma.booking.findFirst({
       where: {
         fieldId,
         date: bookingDate,
         startTime: startTime,
-        status: "CONFIRMED"
-      }
+        status: {
+          in: ["CONFIRMED", "LUNAS"],
+        },
+      },
     });
 
     if (existingBooking) {
@@ -38,7 +48,7 @@ export async function POST(request: Request) {
     const endTime = `${(startHour + 1).toString().padStart(2, "0")}:00`;
 
     // 2. SIMPAN KE DATABASE (Guest Mode)
-    // Kita tidak perlu userId lagi karena kita punya customerName
+    // Status disimpan sesuai yang dikirim (default PENDING)
     const newBooking = await prisma.booking.create({
       data: {
         fieldId,
@@ -46,7 +56,7 @@ export async function POST(request: Request) {
         startTime,
         endTime,
         totalPrice: price,
-        status: "CONFIRMED",
+        status: status,
         // Simpan data tamu
         customerName: customerName,
         customerPhone: customerPhone,
@@ -54,7 +64,6 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, data: newBooking });
-
   } catch (error) {
     console.error("Booking Error:", error);
     return NextResponse.json(

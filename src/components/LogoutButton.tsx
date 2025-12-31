@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,12 +9,12 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     if (!confirm("Yakin ingin keluar dari Admin?")) return;
-    
+
     setLoading(true);
     try {
       // Panggil API Logout untuk hapus cookie
       await fetch("/api/auth/logout", { method: "POST" });
-      
+
       // Redirect ke halaman login
       router.push("/login");
       router.refresh(); // Pastikan middleware mendeteksi cookie sudah hilang
@@ -28,9 +28,24 @@ export default function LogoutButton() {
     <button
       onClick={handleLogout}
       disabled={loading}
-      className="w-full text-left py-2 px-4 mt-auto bg-red-900 hover:bg-red-700 text-white rounded transition flex items-center gap-2 text-sm font-bold"
+      className="w-full text-left mt-auto text-white rounded transition flex items-center gap-2 text-sm font-bold"
     >
-      {loading ? "Keluar..." : "🚪 Logout Admin"}
+      {loading ? (
+        "Keluar..."
+      ) : (
+        <div className="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            fill="#000000"
+            viewBox="0 0 256 256"
+          >
+            <path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"></path>
+          </svg>
+          <span className="text-gray-900">Logout</span>
+        </div>
+      )}
     </button>
   );
 }
