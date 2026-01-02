@@ -59,7 +59,7 @@ export async function POST(request: Request) {
       ATURAN PENTING:
       1. Jika user bertanya harga/fasilitas, jawab berdasarkan data di atas.
       2. Jika user ingin booking, JANGAN minta transfer. Arahkan ke website: https://setiaminisoccer-web.vercel.app/ (atau link localhost).
-      3. Jika kamu tidak tahu jawabannya, arahkan ke Admin WA: 08123456789.`;
+      3. Jika kamu tidak tahu jawabannya, arahkan ke Admin WA: 085333358298.`;
 
     const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash", 

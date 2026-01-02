@@ -251,7 +251,7 @@ export default function BookingModal({
                   <div className="bg-white p-4 rounded-lg flex items-center justify-center">
                     <div className="w-40 h-40 bg-gray-200 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
                       <p className="text-xs text-gray-400 text-center">
-                        [QR Code akan ditampilkan di sini]
+                        <img src="/qris.jpeg" alt="QRIS" className="w-full h-full object-contain" />
                       </p>
                     </div>
                   </div>
@@ -270,19 +270,19 @@ export default function BookingModal({
                     <div>
                       <p className="text-xs text-gray-500">Bank</p>
                       <p className="text-sm font-bold text-gray-800">
-                        BCA / Mandiri / BNI
+                        BCA
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Nomor Rekening</p>
                       <p className="text-sm font-bold text-gray-800">
-                        XXXX XXXX XXXX
+                        8145337638
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Atas Nama</p>
                       <p className="text-sm font-bold text-gray-800">
-                        NAMA PEMILIK REKENING
+                        PT SETIA GROUP INVESTAMA 
                       </p>
                     </div>
                   </div>
