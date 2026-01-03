@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { format } from "date-fns";
+import { format, addMinutes, isEqual, parse } from "date-fns";
 import { id } from "date-fns/locale";
 import { getBookingsByDate } from "@/app/actions/getBookings";
 import BookingModal from "./BookingModal";
@@ -25,6 +25,7 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
     time: string;
     price: number;
   } | null>(null);
+  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
 
   const timeSlots = [
     "07:00",
@@ -60,7 +61,6 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
     }
   }, [selectedDate]);
 
-  // Fungsi untuk menentukan harga berdasarkan jam
   const getPrice = (t: string) => {
     if (
       [
@@ -83,15 +83,23 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
     return 0;
   };
 
+  // Helper: cek apakah array jam berurutan
+  function areTimesSequential(times: string[]) {
+    if (times.length <= 1) return true;
+    const sorted = [...times].sort();
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = parse(sorted[i - 1], "HH:mm", new Date());
+      const curr = parse(sorted[i], "HH:mm", new Date());
+      if (curr.getTime() - prev.getTime() !== 60 * 60 * 1000) return false;
+    }
+    return true;
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4">
-      {/* Wrapper Kartu */}
       <div className="bg-white rounded-3xl overflow-hidden border border-gray-200 flex flex-col md:flex-row">
-        {/* BAGIAN KIRI: KALENDER (Warna Gelap agar Kontras) */}
         <div className="md:w-1/3 bg-white p-8 flex flex-col items-center justify-center relative overflow-hidden">
-          {/* Dekorasi Background */}
           {/* <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div> */}
-
           <h3 className="text-2xl font-bold text-black mb-6 relative z-10 flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -123,7 +131,6 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
           </p>
         </div>
 
-        {/* BAGIAN KANAN: GRID JADWAL */}
         <div className="md:w-2/3 p-8 bg-gray-50">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -158,18 +165,9 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
               {fields.map((field) => (
                 <div
                   key={field.id}
-                  className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition"
+                  className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition min-h-[320px] flex flex-col"
                 >
-                  {/* <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-gray-800 text-lg">
-                      {field.name}
-                    </h4>
-                    <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded uppercase tracking-wide">
-                      {field.type}
-                    </span>
-                  </div> */}
-
-                  <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                  <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2 flex-1">
                     {timeSlots.map((time) => {
                       const isBooked = bookings.some(
                         (b) =>
@@ -178,47 +176,92 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
                           (b.status === "CONFIRMED" || b.status === "LUNAS")
                       );
                       const price = getPrice(time);
+                      const isSelected = selectedTimes.includes(time);
 
                       return (
-                        <div key={time} className="flex flex-col items-center">
-                          <button
-                            disabled={isBooked}
-                            className={`
-                        relative group text-[10px] sm:text-xs py-2 w-full rounded-lg text-center font-bold transition-all select-none
-                        ${
-                          isBooked
-                            ? "bg-red-50 text-red-400 opacity-50 line-through decoration-red-400 cursor-not-allowed"
-                            : "bg-blue-500 text-white shadow-lg hover:bg-blue-600 hover:scale-110 cursor-pointer"
-                        }
-                      `}
-                            onClick={() => {
-                              if (!isBooked && selectedDate) {
-                                setModalData({
-                                  fieldId: field.id,
-                                  fieldName: field.name,
-                                  date: format(selectedDate, "yyyy-MM-dd"),
-                                  time,
-                                  price,
-                                });
-                                setModalOpen(true);
-                              }
-                            }}
-                          >
+                        <button
+                          key={time}
+                          disabled={isBooked}
+                          className={`
+                            relative group h-18 flex flex-col items-center justify-center rounded-lg font-semibold transition-all select-none duration-150
+                            ${
+                              isBooked
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-40"
+                                : isSelected
+                                ? "bg-blue-600 text-white shadow-md"
+                                : "bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 hover:border-blue-300 cursor-pointer"
+                            }
+                          `}
+                          onClick={() => {
+                            if (isBooked) return;
+                            let newSelected: string[];
+                            if (isSelected) {
+                              newSelected = selectedTimes.filter(
+                                (t) => t !== time
+                              );
+                            } else {
+                              newSelected = [...selectedTimes, time];
+                            }
+                            newSelected = newSelected.sort();
+                            if (areTimesSequential(newSelected)) {
+                              setSelectedTimes(newSelected);
+                            }
+                          }}
+                        >
+                          <span className="text-xs md:text-sm font-bold">
                             {time}
-                            {/* Tooltip Hover (Hanya jika tersedia) */}
-                            {!isBooked && (
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-20">
-                                Booking Slot
-                              </div>
-                            )}
-                          </button>
-                          <div className="text-[9px] sm:text-xs text-gray-400 text-center font-semibold mt-1">
-                            {price ? `Rp ${price / 1000}K` : ""}
-                          </div>
-                        </div>
+                          </span>
+                          <span
+                            className={`text-[8px] md:text-xs font-medium mt-0.5 ${
+                              isSelected ? "text-white" : "text-gray-500"
+                            }`}
+                          >
+                            {price ? `Rp${price / 1000}K` : ""}
+                          </span>
+                          {!isBooked && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-[9px] py-1 px-2 rounded whitespace-nowrap z-20 font-medium">
+                              Pilih
+                            </div>
+                          )}
+                        </button>
                       );
                     })}
                   </div>
+
+                  {selectedTimes.length > 0 && (
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">
+                          Total:
+                        </p>
+                        <p className="text-sm font-bold text-blue-600">
+                          {selectedTimes.length} Jam • Rp{" "}
+                          {selectedTimes
+                            .reduce((sum, t) => sum + getPrice(t), 0)
+                            .toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                      <button
+                        className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-150 text-sm"
+                        onClick={() => {
+                          if (!selectedDate) return;
+                          setModalData({
+                            fieldId: field.id,
+                            fieldName: field.name,
+                            date: format(selectedDate, "yyyy-MM-dd"),
+                            time: selectedTimes.join(", "),
+                            price: selectedTimes.reduce(
+                              (sum, t) => sum + getPrice(t),
+                              0
+                            ),
+                          });
+                          setModalOpen(true);
+                        }}
+                      >
+                        Booking
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -229,7 +272,10 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
       {modalOpen && modalData && (
         <BookingModal
           open={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedTimes([]);
+          }}
           fieldId={modalData.fieldId}
           fieldName={modalData.fieldName}
           date={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
@@ -237,7 +283,7 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
           price={modalData.price}
           onBooked={() => {
             setModalOpen(false);
-            // Optionally refresh bookings here
+            setSelectedTimes([]);
           }}
         />
       )}
