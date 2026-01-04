@@ -164,7 +164,7 @@ export default async function Home() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 relative group flex flex-col h-full">
               <div className="relative h-56 md:h-64 w-full overflow-hidden">
                 <Image
-                  src={HImg}
+                  src="/Lapangan.jpeg"
                   alt="Lapangan A"
                   fill
                   className="object-cover group-hover:scale-110 transition duration-700"
@@ -187,7 +187,7 @@ export default async function Home() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 relative group flex flex-col h-full">
               <div className="relative h-56 md:h-64 w-full overflow-hidden">
                 <Image
-                  src={HImg}
+                  src="/Tribun.jpeg"
                   alt="Lapangan B"
                   fill
                   className="object-cover group-hover:scale-110 transition duration-700"
@@ -210,7 +210,7 @@ export default async function Home() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 relative group flex flex-col h-full">
               <div className="relative h-56 md:h-64 w-full overflow-hidden">
                 <Image
-                  src={HImg}
+                  src="/Kantin.jpeg"
                   alt="Lapangan C"
                   fill
                   className="object-cover group-hover:scale-110 transition duration-700"
