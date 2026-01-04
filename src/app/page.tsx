@@ -5,6 +5,7 @@ import UserSchedule from "@/components/UserSchedule";
 import HLogo from "@/../public/MLogo.jpg";
 import HImg from "@/../public/HeroImage.jpg";
 import { PromoCarousel } from "@/components/PromoCarousel";
+import { FacilitiesCarousel } from "@/components/FacilitiesCarousel";
 
 export const dynamic = "force-dynamic";
 
@@ -127,7 +128,8 @@ export default async function Home() {
                 Fasilitas Premium
               </h3>
               <p className="text-sm md:text-base text-gray-500 leading-relaxed">
-                Kamar mandi dilengkapi dengan sabun mandi, sabun muka, shampoo, loker dan kantin.
+                Kamar mandi dilengkapi dengan sabun mandi, sabun muka, shampoo,
+                loker dan kantin.
               </p>
             </div>
           </div>
@@ -151,85 +153,7 @@ export default async function Home() {
       </section>
 
       {/* 5. BOOKING AREA */}
-      <section id="booking-area" className="py-16 md:py-24 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">
-              Fasilitas Pendukung
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Card 1 */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 relative group flex flex-col h-full">
-              <div className="relative h-56 md:h-64 w-full overflow-hidden">
-                <Image
-                  src="/Lapangan.jpeg"
-                  alt="Lapangan A"
-                  fill
-                  className="object-cover group-hover:scale-110 transition duration-700"
-                />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm z-10">
-                </div>
-              </div>
-              <div className="p-6 md:p-8 flex-1 flex flex-col relative bg-white">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-                  Lapangan
-                </h2>
-                <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed flex-1">
-                  Lapangan rumput sintetis standar FIFA, cocok untuk latihan dan
-                  pertandingan persahabatan.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 relative group flex flex-col h-full">
-              <div className="relative h-56 md:h-64 w-full overflow-hidden">
-                <Image
-                  src="/Tribun.jpeg"
-                  alt="Lapangan B"
-                  fill
-                  className="object-cover group-hover:scale-110 transition duration-700"
-                />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm z-10">
-                </div>
-              </div>
-              <div className="p-6 md:p-8 flex-1 flex flex-col relative bg-white">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-                  Fasilitas
-                </h2>
-                <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed flex-1">
-                  Dilengkapi lampu malam dan tribun penonton, cocok untuk event
-                  dan turnamen. Serta Loker yang aman untuk menyimpan barang.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 relative group flex flex-col h-full">
-              <div className="relative h-56 md:h-64 w-full overflow-hidden">
-                <Image
-                  src="/Kantin.jpeg"
-                  alt="Lapangan C"
-                  fill
-                  className="object-cover group-hover:scale-110 transition duration-700"
-                />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm z-10">
-                </div>
-              </div>
-              <div className="p-6 md:p-8 flex-1 flex flex-col relative bg-white">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-                  Kantin
-                </h2>
-                <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed flex-1">
-                  Tersedia Berbagai Minuman dan Snack.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <FacilitiesCarousel />
 
       {/* FOOTER */}
       <footer className="bg-white text-gray-600 py-12 border-t border-gray-200">

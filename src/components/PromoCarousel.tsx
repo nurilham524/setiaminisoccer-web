@@ -1,6 +1,7 @@
 "use client";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
+import { useEffect } from "react";
 
 function AutoplayPlugin(slider: any) {
   let timeout: NodeJS.Timeout;
@@ -39,9 +40,16 @@ export function PromoCarousel() {
     {
       loop: true,
       slides: { perView: 1, spacing: 16 },
+      initial: 0,
     },
     [AutoplayPlugin]
   );
+
+  useEffect(() => {
+    if (instanceRef.current) {
+      instanceRef.current.update();
+    }
+  }, [instanceRef]);
 
   return (
     <section className="py-16 bg-linear-to-r from-gray-50 via-white to-gray-200 relative">
@@ -54,10 +62,10 @@ export function PromoCarousel() {
             Dapatkan diskon & bonus menarik untuk booking lapangan sekarang.
           </p>
         </div>
-        <div className="relative">
-          <div ref={sliderRef} className="keen-slider">
+        <div className="relative w-full">
+          <div ref={sliderRef} className="keen-slider w-full overflow-hidden">
             {/* Promo Card 1 */}
-            <div className="keen-slider__slide min-w-[320px] bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-blue-400">
+            <div className="keen-slider__slide !w-full flex-shrink-0 bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-blue-400">
               <span className="text-5xl mb-4">🎉</span>
               <h3 className="font-bold text-xl text-blue-700 mb-2">
                 Diskon 20%
@@ -74,7 +82,7 @@ export function PromoCarousel() {
               </a>
             </div>
             {/* Promo Card 2 */}
-            <div className="keen-slider__slide min-w-[320px] bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-cyan-400">
+            <div className="keen-slider__slide !w-full flex-shrink-0 bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-cyan-400">
               <span className="text-5xl mb-4">⚽️</span>
               <h3 className="font-bold text-xl text-cyan-700 mb-2">
                 Free Jersey
@@ -91,7 +99,7 @@ export function PromoCarousel() {
               </a>
             </div>
             {/* Promo Card 3 */}
-            <div className="keen-slider__slide min-w-[320px] bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-yellow-400">
+            <div className="keen-slider__slide !w-full flex-shrink-0 bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-yellow-400">
               <span className="text-5xl mb-4">🥤</span>
               <h3 className="font-bold text-xl text-yellow-700 mb-2">
                 Free Minuman
