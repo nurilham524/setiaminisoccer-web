@@ -88,7 +88,7 @@ export function FacilitiesCarousel() {
       initial: 0,
       mode: "snap",
       rubberband: false,
-      duration: 300,
+      // duration: 300,
       breakpoints: {
         "(min-width: 768px)": {
           slides: { perView: 2, spacing: 16 },
