@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import AdminBookingTable from "@/components/AdminBookingTable";
 import AdminSchedule from "@/components/JadwalAdmin";
+import PromoManager from "@/components/PromoManager";
 
 // Pastikan halaman ini selalu merender data terbaru (Real-time)
 export const dynamic = 'force-dynamic';
@@ -18,7 +19,12 @@ export default async function AdminDashboard() {
   const bookings = await prisma.booking.findMany({
     orderBy: { createdAt: "desc" },
     take: 20, 
-    include: { field: true, user: true },
+    include: { 
+      field: true, 
+      user: {
+        select: { name: true, email: true }
+      }
+    },
   });
 
   // 2. Ambil Data Lapangan untuk Kalender
@@ -26,7 +32,7 @@ export default async function AdminDashboard() {
 
   // 3. Hitung Statistik Pendapatan
   const allConfirmedBookings = await prisma.booking.findMany({
-    where: { OR: [{ status: "CONFIRMED" }, { status: "LUNAS" }] }
+    where: { status: "CONFIRMED" }
   });
 
   const totalRevenue = allConfirmedBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
@@ -88,11 +94,20 @@ export default async function AdminDashboard() {
              </div>
         </section>
 
+        {/* 2.5 PROMO MANAGER */}
+        <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+             <div className="p-5 border-b bg-gray-50/50 flex justify-between items-center">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                    🎉 Kelola Promo
+                </h3>
+             </div>
+             <div className="p-6">
+                <PromoManager />
+             </div>
+        </section>
+
         {/* 3. TABEL DATA (Komponen Tabel) */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-             <div className="p-6 border-b flex justify-between items-center bg-white">
-                <h3 className="font-bold text-gray-700">📝 Riwayat 20 Booking Terakhir</h3>
-             </div>
              <div className="overflow-x-auto">
                 <AdminBookingTable bookings={bookings} />
              </div>

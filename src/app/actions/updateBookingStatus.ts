@@ -13,17 +13,19 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
       include: { field: true }
     });
 
-    // 2. Kirim Notifikasi WA (Hanya jika status jadi CONFIRMED)
-    if (newStatus === "CONFIRMED" || newStatus === "LUNAS") {
+    // 2. Kirim Notifikasi WA (Hanya jika status jadi SELESAI/CONFIRMED)
+    if (newStatus === "CONFIRMED") {
       const successMessage = `
 ✅ *PEMBAYARAN DITERIMA!*
 
-Halo Kak ${booking.customerName}, booking Anda sudah *LUNAS/KONFIRMASI*.
+Halo Kak ${booking.customerName}, booking Anda sudah terkonfirmasi.
 
 🎫 *Tiket Masuk:*
 ID Booking: ${booking.id.substring(0, 8)}...
 Lapangan: ${booking.field.name}
-Jam: ${booking.startTime}
+Tanggal: ${new Date(booking.date).toLocaleDateString('id-ID')}
+Jam: ${booking.startTime} - ${booking.endTime}
+Harga: Rp ${booking.totalPrice?.toLocaleString('id-ID')}
 
 Silakan tunjukkan pesan ini kepada petugas di lokasi.
 Selamat bermain! ⚽🔥

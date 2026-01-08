@@ -61,9 +61,10 @@ Balas pesan ini dengan mengirimkan BUKTI TRANSFER agar status booking menjadi CO
 
 Pelanggan: ${customerName}
 WA: ${customerPhone}
-Jadwal: ${date.toLocaleDateString('id-ID')} (${startTime})
+Jadwal: ${date.toLocaleDateString('id-ID')} (${startTime} - ${endTime})
 Lapangan: ${newBooking.field.name}
-Status: Menunggu Konfirmasi
+Total: Rp ${totalPrice.toLocaleString('id-ID')}
+Status: Menunggu Verifikasi
 
 Segera cek dashboard admin!
   `.trim();
@@ -72,6 +73,7 @@ Segera cek dashboard admin!
 
   // -----------------------------------
 
-  revalidatePath("/admin"); // Refresh data admin
+  revalidatePath("/");
+  revalidatePath("/admin");
   return { success: true, bookingId: newBooking.id };
 }

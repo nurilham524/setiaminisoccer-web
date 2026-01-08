@@ -52,3 +52,16 @@ model Booking {
   user       User?    @relation(fields: [userId], references: [id]) // Tambah '?' karena userId jadi optional
   field      Field    @relation(fields: [fieldId], references: [id])
 }
+
+model Promo {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  emoji       String
+  borderColor String   @default("border-blue-500")
+  buttonColor String   @default("bg-blue-500")
+  buttonHoverColor String @default("hover:bg-blue-600")
+  whatsappText String  // Text yang dikirim ke WA saat klik
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

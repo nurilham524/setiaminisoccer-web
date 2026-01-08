@@ -9,13 +9,14 @@ export async function POST(request: Request) {
       fieldId,
       date,
       startTime,
+      endTime,
       price,
       customerName,
       customerPhone,
       status = "PENDING",
     } = body;
 
-    if (!fieldId || !date || !startTime || !customerName || !customerPhone) {
+    if (!fieldId || !date || !startTime || !endTime || !customerName || !customerPhone) {
       return NextResponse.json(
         { error: "Data tidak lengkap. Nama & WA wajib diisi." },
         { status: 400 }
@@ -43,9 +44,6 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-
-    const startHour = parseInt(startTime.split(":")[0]);
-    const endTime = `${(startHour + 1).toString().padStart(2, "0")}:00`;
 
     // 2. SIMPAN KE DATABASE (Guest Mode)
     // Status disimpan sesuai yang dikirim (default PENDING)

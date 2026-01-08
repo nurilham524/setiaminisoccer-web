@@ -10,7 +10,7 @@ type BookingModalProps = {
   fieldId: string;
   fieldName: string;
   date: string;
-  time: string;
+  times: string[];
   price: number;
   onBooked?: () => void;
 };
@@ -19,8 +19,9 @@ export default function BookingModal({
   open,
   onClose,
   fieldId,
+  // fieldName,
   date,
-  time,
+  times,
   price,
   onBooked,
 }: BookingModalProps) {
@@ -51,13 +52,19 @@ export default function BookingModal({
   const handleConfirmPayment = async () => {
     setIsSubmitting(true);
     try {
+      // Create single booking dengan range waktu
+      const startTime = times[0]; // Jam pertama
+      const lastHour = parseInt(times[times.length - 1].split(":")[0]);
+      const endTime = `${(lastHour + 1).toString().padStart(2, "0")}:00`; // Jam terakhir + 1
+
       const response = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fieldId,
           date,
-          startTime: time,
+          startTime,
+          endTime,
           price,
           customerName: name,
           customerPhone: phone,
@@ -153,7 +160,7 @@ export default function BookingModal({
                 {date}
               </div>
               <div className="py-2">
-                <span className="font-semibold text-gray-700">Jam:</span> {time}
+                <span className="font-semibold text-gray-700">Jam:</span> {times.join(", ")}
               </div>
               <div className="py-2">
                 <span className="font-semibold text-gray-700">Harga:</span>{" "}
@@ -197,7 +204,7 @@ export default function BookingModal({
                 </p>
                 <p className="text-xs text-gray-600 mt-1">
                   <span className="font-semibold">Tanggal & Jam:</span> {date} -{" "}
-                  {time}
+                  {times.join(", ")}
                 </p>
                 <p className="text-sm font-bold text-blue-700 mt-2">
                   Total: Rp {price.toLocaleString("id-ID")}

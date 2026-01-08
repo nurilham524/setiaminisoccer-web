@@ -39,7 +39,7 @@ export default function AdminBookingTable({
   const handleConfirm = async (bookingId: string, customerName: string) => {
     // 1. Tanya Admin dulu biar gak salah klik
     const isSure = confirm(
-      `Konfirmasi pembayaran dari ${
+      `Konfirmasi booking dari ${
         customerName || "Tamu"
       }? \nNotifikasi WA akan dikirim otomatis.`
     );
@@ -48,22 +48,10 @@ export default function AdminBookingTable({
     // 2. Set loading
     setProcessingId(bookingId);
 
-    // 3. Panggil Server Action
+    // 3. Panggil Server Action - langsung ke CONFIRMED (SELESAI)
     await updateBookingStatus(bookingId, "CONFIRMED");
 
     // 4. Matikan loading (Data akan refresh otomatis karena revalidatePath di server)
-    setProcessingId(null);
-  };
-
-  // Fungsi untuk ubah status PENDING ke LUNAS
-  const handleLunas = async (bookingId: string, customerName: string) => {
-    const isSure = confirm(
-      `Tandai pembayaran dari ${customerName || "Tamu"} sebagai LUNAS?`
-    );
-    if (!isSure) return;
-
-    setProcessingId(bookingId);
-    await updateBookingStatus(bookingId, "LUNAS");
     setProcessingId(null);
   };
 
@@ -76,87 +64,80 @@ export default function AdminBookingTable({
   }
 
   return (
-    <table className="min-w-full text-sm text-left">
-      <thead className="bg-gray-50 text-gray-600 font-medium border-b">
-        <tr>
-          <th className="py-3 px-4">Tanggal & Jam</th>
-          <th className="py-3 px-4">Lapangan</th>
-          <th className="py-3 px-4">Penyewa</th>
-          <th className="py-3 px-4">Kontak</th>
-          <th className="py-3 px-4">Harga</th>
-          <th className="py-3 px-4">Status</th>
-          <th className="py-3 px-4 text-center">Aksi</th> {/* Kolom Baru */}
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-100">
-        {bookings.map((booking) => {
-          const displayName =
-            booking.customerName || booking.user?.name || "Guest";
-          const displayContact =
-            booking.customerPhone || booking.user?.email || "-";
+    <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+      <table className="min-w-full text-sm">
+        <thead>
+          <tr className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+            <th className="py-4 px-6 text-left font-bold">Tanggal & Jam</th>
+            <th className="py-4 px-6 text-left font-bold">Lapangan</th>
+            <th className="py-4 px-6 text-left font-bold">Penyewa</th>
+            <th className="py-4 px-6 text-left font-bold">Kontak</th>
+            <th className="py-4 px-6 text-left font-bold">Harga</th>
+            <th className="py-4 px-6 text-left font-bold">Status</th>
+            <th className="py-4 px-6 text-center font-bold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {bookings.map((booking, idx) => {
+            const displayName =
+              booking.customerName || booking.user?.name || "Guest";
+            const displayContact =
+              booking.customerPhone || booking.user?.email || "-";
 
-          // Cek apakah booking sudah lunas/confirmed
-          const isConfirmed =
-            booking.status === "CONFIRMED" || booking.status === "LUNAS";
+            // Cek apakah booking sudah lunas/confirmed
+            const isConfirmed =
+              booking.status === "CONFIRMED" || booking.status === "LUNAS";
 
-          return (
-            <tr key={booking.id} className="hover:bg-gray-50 transition">
-              <td className="py-3 px-4">
-                <div className="font-bold text-gray-800">
-                  {format(new Date(booking.date), "dd MMM yyyy", {
-                    locale: id,
-                  })}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {booking.startTime} - {booking.endTime}
-                </div>
-              </td>
-              <td className="py-3 px-4">{booking.field.name}</td>
-              <td className="py-3 px-4 font-medium">{displayName}</td>
-              <td className="py-3 px-4 text-gray-500">{displayContact}</td>
-              <td className="py-3 px-4">{formatRupiah(booking.totalPrice)}</td>
-              <td className="py-3 px-4">
-                <span
-                  className={`px-2 py-1 rounded text-xs font-bold ${
-                    booking.status === "LUNAS"
-                      ? "bg-green-100 text-green-700"
-                      : booking.status === "CONFIRMED"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {booking.status}
-                </span>
-              </td>
-
-              {/* KOLOM AKSI (TOMBOL STATUS) */}
-              <td className="py-3 px-4 text-center">
-                {booking.status === "PENDING" ? (
-                  <button
-                    onClick={() => handleConfirm(booking.id, displayName)}
-                    disabled={processingId === booking.id}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            return (
+              <tr key={booking.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition`}>
+                <td className="py-4 px-6">
+                  <div className="font-semibold text-gray-900">
+                    {format(new Date(booking.date), "dd MMM yyyy", {
+                      locale: id,
+                    })}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {booking.startTime} - {booking.endTime}
+                  </div>
+                </td>
+                <td className="py-4 px-6 font-medium text-gray-800">{booking.field.name}</td>
+                <td className="py-4 px-6 font-semibold text-gray-900">{displayName}</td>
+                <td className="py-4 px-6 text-gray-600">{displayContact}</td>
+                <td className="py-4 px-6 font-bold text-blue-600">{formatRupiah(booking.totalPrice)}</td>
+                <td className="py-4 px-6">
+                  <span
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold inline-block ${
+                      booking.status === "CONFIRMED"
+                        ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                        : "bg-amber-100 text-amber-700 border border-amber-200"
+                    }`}
                   >
-                    {processingId === booking.id
-                      ? "Proses..."
-                      : "⏳ Verifikasi"}
-                  </button>
-                ) : booking.status === "CONFIRMED" ? (
-                  <button
-                    onClick={() => handleLunas(booking.id, displayName)}
-                    disabled={processingId === booking.id}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  >
-                    {processingId === booking.id ? "Proses..." : "✅ Lunas"}
-                  </button>
-                ) : (
-                  <span className="text-gray-400 text-xs italic">Selesai</span>
-                )}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                    {booking.status === "CONFIRMED" && "✓ Selesai"}
+                    {booking.status === "PENDING" && "⏳ Pending"}
+                  </span>
+                </td>
+
+                {/* KOLOM AKSI (TOMBOL STATUS) */}
+                <td className="py-4 px-6 text-center">
+                  {booking.status === "PENDING" ? (
+                    <button
+                      onClick={() => handleConfirm(booking.id, displayName)}
+                      disabled={processingId === booking.id}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all disabled:bg-gray-400 disabled:cursor-not-allowed hover:shadow-lg"
+                    >
+                      {processingId === booking.id
+                        ? "Proses..."
+                        : "✓ Selesai"}
+                    </button>
+                  ) : (
+                    <span className="text-gray-400 text-xs font-medium">Selesai</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }

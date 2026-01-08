@@ -9,7 +9,14 @@ import { getBookingsByDate } from "@/app/actions/getBookings";
 import BookingModal from "./BookingModal";
 
 type Field = { id: string; name: string; type: string };
-type BookingSimple = { fieldId: string; startTime: string; status: string };
+type BookingSimple = { fieldId: string; startTime: string; endTime: string; status: string };
+type BookingModalData = {
+  fieldId: string;
+  fieldName: string;
+  date: string;
+  times: string[];
+  price: number;
+};
 
 export default function UserSchedule({ fields }: { fields: Field[] }) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
@@ -18,13 +25,7 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
   const [bookings, setBookings] = useState<BookingSimple[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalData, setModalData] = useState<{
-    fieldId: string;
-    fieldName: string;
-    date: string;
-    time: string;
-    price: number;
-  } | null>(null);
+  const [modalData, setModalData] = useState<BookingModalData | null>(null);
   const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
 
   const timeSlots = [
@@ -81,6 +82,16 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
     if (["20:00", "21:00"].includes(t)) return 800000;
     if (["22:00", "23:00"].includes(t)) return 600000;
     return 0;
+  };
+
+  // Refetch bookings after successful booking
+  const handleBookingSuccess = async () => {
+    if (selectedDate) {
+      const res = await getBookingsByDate(selectedDate);
+      if (res.success && res.data) {
+        setBookings(res.data as unknown as BookingSimple[]);
+      }
+    }
   };
 
   // Helper: cek apakah array jam berurutan
@@ -169,12 +180,17 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
                 >
                   <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2 flex-1">
                     {timeSlots.map((time) => {
-                      const isBooked = bookings.some(
-                        (b) =>
-                          b.fieldId === field.id &&
-                          b.startTime === time &&
-                          (b.status === "CONFIRMED" || b.status === "LUNAS")
-                      );
+                      const isBooked = bookings.some((b) => {
+                        if (b.fieldId !== field.id) return false;
+                        if (!(b.status === "PENDING" || b.status === "CONFIRMED")) return false;
+                        
+                        // Check apakah time berada dalam range [startTime, endTime)
+                        const timeHour = parseInt(time.split(":")[0]);
+                        const startHour = parseInt(b.startTime.split(":")[0]);
+                        const endHour = parseInt(b.endTime.split(":")[0]);
+                        
+                        return timeHour >= startHour && timeHour < endHour;
+                      });
                       const price = getPrice(time);
                       const isSelected = selectedTimes.includes(time);
 
@@ -249,7 +265,7 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
                             fieldId: field.id,
                             fieldName: field.name,
                             date: format(selectedDate, "yyyy-MM-dd"),
-                            time: selectedTimes.join(", "),
+                            times: selectedTimes,
                             price: selectedTimes.reduce(
                               (sum, t) => sum + getPrice(t),
                               0
@@ -279,11 +295,12 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
           fieldId={modalData.fieldId}
           fieldName={modalData.fieldName}
           date={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
-          time={modalData.time}
+          times={modalData.times}
           price={modalData.price}
           onBooked={() => {
             setModalOpen(false);
             setSelectedTimes([]);
+            handleBookingSuccess();
           }}
         />
       )}

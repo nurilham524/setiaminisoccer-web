@@ -8,6 +8,7 @@ async function main() {
   await prisma.booking.deleteMany()
   await prisma.field.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.promo.deleteMany()
 
   console.log('🗑️  Database dibersihkan...')
 
@@ -43,14 +44,40 @@ async function main() {
     },
   })
 
-  // 5. Buat Lapangan 2
-  await prisma.field.create({
+  // 5. Buat Promo Default
+  await prisma.promo.create({
     data: {
-      name: 'Lapangan B (Vinyl Indoor)',
-      type: 'Vinyl',
-      pricePerHour: 120000,
-      description: 'Lantai vinyl rata, bola bergulir cepat. Indoor, anti hujan.',
-      imageUrl: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80',
+      title: 'Diskon 20%',
+      description: 'Booking minimal 2 jam, dapatkan potongan harga langsung!',
+      emoji: '🎉',
+      borderColor: 'border-blue-500',
+      buttonColor: 'bg-blue-500',
+      buttonHoverColor: 'hover:bg-blue-600',
+      whatsappText: 'Promo%2020%25%20Booking%20Lapangan',
+    },
+  })
+
+  await prisma.promo.create({
+    data: {
+      title: 'Free Jersey',
+      description: 'Setiap booking 3 jam, dapat jersey eksklusif gratis!',
+      emoji: '⚽',
+      borderColor: 'border-blue-500',
+      buttonColor: 'bg-blue-500',
+      buttonHoverColor: 'hover:bg-blue-600',
+      whatsappText: 'Free%20Jersey%20Booking%20Lapangan',
+    },
+  })
+
+  await prisma.promo.create({
+    data: {
+      title: 'Free Minuman',
+      description: 'Booking malam hari dapat minuman gratis untuk seluruh tim!',
+      emoji: '🥤',
+      borderColor: 'border-blue-500',
+      buttonColor: 'bg-blue-500',
+      buttonHoverColor: 'hover:bg-blue-600',
+      whatsappText: 'Free%20Minuman%20Booking%20Lapangan',
     },
   })
 

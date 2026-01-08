@@ -1,7 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+interface Promo {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  borderColor: string;
+  buttonColor: string;
+  buttonHoverColor: string;
+  whatsappText: string;
+}
 
 function AutoplayPlugin(slider: any) {
   let timeout: NodeJS.Timeout;
@@ -36,6 +48,9 @@ function AutoplayPlugin(slider: any) {
 }
 
 export function PromoCarousel() {
+  const [promos, setPromos] = useState<Promo[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const [sliderRef, instanceRef] = useKeenSlider(
     {
       loop: true,
@@ -45,106 +60,116 @@ export function PromoCarousel() {
     [AutoplayPlugin]
   );
 
+  // Fetch promos dari database
+  useEffect(() => {
+    const fetchPromos = async () => {
+      try {
+        const res = await fetch("/api/promo");
+        const data = await res.json();
+        setPromos(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching promos:", error);
+        setPromos([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromos();
+  }, []);
+
   useEffect(() => {
     if (instanceRef.current) {
       instanceRef.current.update();
     }
-  }, [instanceRef]);
+  }, [instanceRef, promos]);
 
   return (
-    <section className="py-16 bg-linear-to-r from-gray-50 via-white to-gray-200 relative">
+    <section className="py-20 md:py-28 bg-white relative">
       <div className="max-w-5xl mx-auto px-4">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-400 drop-shadow-lg mb-2">
-            Promo Spesial Akhir Tahun!
+        <div className="text-center mb-16">
+          <p className="text-xs uppercase tracking-widest text-gray-500 font-semibold mb-4">
+            Penawaran Eksklusif
+          </p>
+          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-4 tracking-tight">
+            Kesempatan Terbatas
           </h2>
-          <p className="text-lg text-white/80 mb-4">
-            Dapatkan diskon & bonus menarik untuk booking lapangan sekarang.
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Nikmati penawaran istimewa dengan benefit eksklusif untuk setiap booking Anda
           </p>
         </div>
+
         <div className="relative w-full">
-          <div ref={sliderRef} className="keen-slider w-full overflow-hidden">
-            {/* Promo Card 1 */}
-            <div className="keen-slider__slide !w-full flex-shrink-0 bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-blue-400">
-              <span className="text-5xl mb-4">🎉</span>
-              <h3 className="font-bold text-xl text-blue-700 mb-2">
-                Diskon 20%
-              </h3>
-              <p className="text-gray-500 text-center mb-4">
-                Booking minimal 2 jam, dapatkan potongan harga langsung!
-              </p>
-              <a
-                href="https://wa.me/6285117692051?text=Promo%2020%25%20Booking%20Lapangan"
-                target="_blank"
-                className="bg-blue-600 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:bg-blue-700 transition"
-              >
-                Klaim Promo
-              </a>
+          {loading ? (
+            <div className="text-center py-32">
+              <div className="text-gray-400">Loading penawaran...</div>
             </div>
-            {/* Promo Card 2 */}
-            <div className="keen-slider__slide !w-full flex-shrink-0 bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-cyan-400">
-              <span className="text-5xl mb-4">⚽️</span>
-              <h3 className="font-bold text-xl text-cyan-700 mb-2">
-                Free Jersey
-              </h3>
-              <p className="text-gray-500 text-center mb-4">
-                Setiap booking 3 jam, dapat jersey eksklusif gratis!
-              </p>
-              <a
-                href="https://wa.me/6285117692051?text=Free%20Jersey%20Booking%20Lapangan"
-                target="_blank"
-                className="bg-cyan-600 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:bg-cyan-700 transition"
-              >
-                Klaim Promo
-              </a>
+          ) : promos.length === 0 ? (
+            <div className="text-center py-32">
+              <p className="text-gray-500 text-xl">Belum ada penawaran tersedia</p>
             </div>
-            {/* Promo Card 3 */}
-            <div className="keen-slider__slide !w-full flex-shrink-0 bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center border-4 border-yellow-400">
-              <span className="text-5xl mb-4">🥤</span>
-              <h3 className="font-bold text-xl text-yellow-700 mb-2">
-                Free Minuman
-              </h3>
-              <p className="text-gray-500 text-center mb-4">
-                Booking malam hari dapat minuman gratis untuk seluruh tim!
-              </p>
-              <a
-                href="https://wa.me/6285117692051?text=Free%20Minuman%20Booking%20Lapangan"
-                target="_blank"
-                className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:bg-yellow-600 transition"
+          ) : (
+            <>
+              <div ref={sliderRef} className="keen-slider w-full overflow-hidden">
+                {promos.map((promo) => (
+                  <div
+                    key={promo.id}
+                    className={`keen-slider__slide !w-full flex-shrink-0 bg-white rounded-2xl shadow-lg p-12 flex flex-col items-center justify-center border ${promo.borderColor} group hover:shadow-xl transition duration-300`}
+                  >
+                    <span className="text-6xl md:text-7xl mb-6 group-hover:scale-110 transition duration-300">
+                      {promo.emoji}
+                    </span>
+                    <h3 className="font-light text-gray-900 text-3xl md:text-4xl mb-4 text-center tracking-tight">
+                      {promo.title}
+                    </h3>
+                    <p className="text-gray-600 text-center mb-8 max-w-md leading-relaxed">
+                      {promo.description}
+                    </p>
+                    <a
+                      href={`https://wa.me/6285117692051?text=${promo.whatsappText}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${promo.buttonColor} text-white font-medium px-8 py-3 rounded-lg ${promo.buttonHoverColor} transition uppercase text-sm tracking-widest shadow-md hover:shadow-lg`}
+                    >
+                      Klaim Penawaran
+                    </a>
+                  </div>
+                ))}
+              </div>
+
+              {/* Navigation Buttons */}
+              <button
+                className="absolute top-1/2 left-4 -translate-y-1/2 bg-white hover:bg-gray-50 text-gray-700 rounded-full p-3 shadow-md hover:shadow-lg transition border border-gray-200 hover:border-gray-300"
+                onClick={() => instanceRef.current?.prev()}
+                aria-label="Previous"
               >
-                Klaim Promo
-              </a>
-            </div>
-          </div>
-          {/* Arrow Button */}
-          <button
-            className="absolute top-1/2 left-0 -translate-y-1/2 bg-white/80 text-blue-600 rounded-full p-2 shadow-lg hover:bg-white transition"
-            onClick={() => instanceRef.current?.prev()}
-          >
-            <svg width="24" height="24" fill="none">
-              <path
-                d="M15 19l-7-7 7-7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            className="absolute top-1/2 right-0 -translate-y-1/2 bg-white/80 text-blue-600 rounded-full p-2 shadow-lg hover:bg-white transition"
-            onClick={() => instanceRef.current?.next()}
-          >
-            <svg width="24" height="24" fill="none">
-              <path
-                d="M9 5l7 7-7 7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M15 19l-7-7 7-7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                className="absolute top-1/2 right-4 -translate-y-1/2 bg-white hover:bg-gray-50 text-gray-700 rounded-full p-3 shadow-md hover:shadow-lg transition border border-gray-200 hover:border-gray-300"
+                onClick={() => instanceRef.current?.next()}
+                aria-label="Next"
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M9 5l7 7-7 7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </section>
