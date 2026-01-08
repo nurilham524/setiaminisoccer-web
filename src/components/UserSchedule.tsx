@@ -156,14 +156,14 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
               </svg>{" "}
               Status Lapangan
             </h3>
-            <div className="flex gap-3 text-xs font-bold">
+            {/* <div className="flex gap-3 text-xs font-bold">
               <span className="px-3 py-1 rounded-full bg-white border border-blue-200 text-blue-700 shadow-sm">
                 TERSEDIA
               </span>
               <span className="px-3 py-1 rounded-full bg-red-100 text-red-600 shadow-sm">
                 FULL BOOKED
               </span>
-            </div>
+            </div> */}
           </div>
 
           {loading ? (
