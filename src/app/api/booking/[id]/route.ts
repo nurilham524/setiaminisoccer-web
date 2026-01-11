@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../lib/prisma"; // Sesuaikan path jika perlu (../../lib/prisma)
+import { prisma } from "../../../../lib/prisma";
 
-// 1. UPDATE STATUS (PATCH)
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // Support Next.js 15
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
     const { id } = await params;
-    const { status } = await request.json(); // Menerima status baru (misal: "CONFIRMED")
+    const { status } = await request.json(); 
 
     const updatedBooking = await prisma.booking.update({
       where: { id },
@@ -21,7 +20,6 @@ export async function PATCH(
   }
 }
 
-// 2. HAPUS BOOKING (DELETE)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

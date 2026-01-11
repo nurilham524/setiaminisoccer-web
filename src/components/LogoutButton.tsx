@@ -12,12 +12,9 @@ export default function LogoutButton() {
 
     setLoading(true);
     try {
-      // Panggil API Logout untuk hapus cookie
       await fetch("/api/auth/logout", { method: "POST" });
-
-      // Redirect ke halaman login
       router.push("/login");
-      router.refresh(); // Pastikan middleware mendeteksi cookie sudah hilang
+      router.refresh();
     } catch (error) {
       alert("Gagal logout");
       setLoading(false);

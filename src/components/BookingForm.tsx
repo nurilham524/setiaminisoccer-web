@@ -14,11 +14,8 @@ export default function BookingForm({
   pricePerHour,
 }: BookingFormProps) {
   const router = useRouter();
-
-  // STATE BARU: Nama & WhatsApp
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-
   const [date, setDate] = useState("");
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +39,6 @@ export default function BookingForm({
   ];
 
   const handleBooking = async () => {
-    // Validasi Lengkap
     if (!name || !phone || !date || !selectedTime) {
       return alert("Mohon lengkapi Nama, No WA, Tanggal, dan Jam!");
     }
@@ -58,7 +54,6 @@ export default function BookingForm({
           date,
           startTime: selectedTime,
           price: pricePerHour,
-          // KIRIM DATA BARU KE API
           customerName: name,
           customerPhone: phone,
         }),
@@ -70,7 +65,6 @@ export default function BookingForm({
 
       alert("✅ BOOKING SUKSES! Mohon datang tepat waktu.");
 
-      // Reset Form
       setSelectedTime(null);
       setDate("");
       setName("");
@@ -85,7 +79,6 @@ export default function BookingForm({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 1. INPUT DATA DIRI (BARU) */}
       <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">
           Data Penyewa
@@ -114,7 +107,6 @@ export default function BookingForm({
         </div>
       </div>
 
-      {/* 2. INPUT TANGGAL */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Pilih Tanggal
@@ -131,7 +123,6 @@ export default function BookingForm({
         />
       </div>
 
-      {/* 3. INPUT JAM */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Pilih Jam Main
@@ -160,7 +151,6 @@ export default function BookingForm({
         )}
       </div>
 
-      {/* 4. TOTAL & SUBMIT */}
       {selectedTime && (
         <div className="bg-green-50 p-3 rounded-md border border-green-200 mt-2">
           <p className="text-xs text-green-800 uppercase">Total Bayar</p>

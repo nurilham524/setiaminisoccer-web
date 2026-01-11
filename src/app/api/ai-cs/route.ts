@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// 1. MEMAKSA ROUTE INI JADI DINAMIS (Anti-Cache/Static)
 export const dynamic = 'force-dynamic'; 
 
-// 2. MENANGANI PREFLIGHT CHECK (Agar tidak dianggap 405 oleh browser/Fonnte)
 export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {
@@ -19,21 +17,13 @@ export async function OPTIONS() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
-    // Log data masuk untuk debugging di Vercel Logs
-    console.log("📥 [POST] Data masuk:", JSON.stringify(body));
-
     const userMessage = body.message;
     const userPhone = body.sender; 
 
     if (!userMessage || !userPhone) {
         return NextResponse.json({ status: "No message or sender" });
     }
-
-    // --- LOGIKA AI ---
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    
-    // Ambil data lapangan terbaru
     const fields = await prisma.field.findMany({
         select: { name: true, type: true, pricePerHour: true, description: true }
     });
@@ -70,7 +60,6 @@ export async function POST(request: Request) {
     const response = await result.response;
     const aiReply = response.text();
 
-    // --- KIRIM BALIK KE FONNTE ---
     const fonnteRes = await fetch('https://api.fonnte.com/send', {
         method: 'POST',
         headers: {
@@ -83,9 +72,8 @@ export async function POST(request: Request) {
         })
     });
     
-    // Cek hasil kirim ke Fonnte (Opsional, buat debug)
     const fonnteData = await fonnteRes.json();
-    console.log("📤 [FONNTE] Status kirim:", fonnteData);
+    // console.log("📤 [FONNTE] Status kirim:", fonnteData);
 
     return NextResponse.json({ status: true, detail: "Pesan terproses" });
 

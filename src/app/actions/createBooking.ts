@@ -1,14 +1,12 @@
-'use server'
+"use server";
 
 import { prisma } from "@/lib/prisma";
-import { sendWhatsApp } from "@/utils/fonnte"; // Import fungsi tadi
+import { sendWhatsApp } from "@/utils/fonnte";
 import { revalidatePath } from "next/cache";
 
-// Ganti nomor ini dengan nomor Admin/Owner Lapangan
-const ADMIN_PHONE = "085333358298"; 
+const ADMIN_PHONE = "085656804903";
 
 export async function createBooking(formData: FormData) {
-  // 1. Ambil data dari form
   const fieldId = formData.get("fieldId") as string;
   const date = new Date(formData.get("date") as string);
   const startTime = formData.get("startTime") as string;
@@ -17,7 +15,6 @@ export async function createBooking(formData: FormData) {
   const customerPhone = formData.get("customerPhone") as string;
   const totalPrice = Number(formData.get("price"));
 
-  // 2. Simpan ke Database
   const newBooking = await prisma.booking.create({
     data: {
       fieldId,
@@ -27,27 +24,23 @@ export async function createBooking(formData: FormData) {
       customerName,
       customerPhone,
       totalPrice,
-      status: "PENDING", // Status awal
+      status: "PENDING",
     },
-    include: { field: true } // Ambil nama lapangan
+    include: { field: true },
   });
 
-  // --- LOGIKA NOTIFIKASI WA (BARU) ---
-
-  // A. Kirim WA ke CUSTOMER (Tagihan)
   const userMessage = `
 Halo Kak *${customerName}*! 👋
 Booking Anda berhasil dicatat (Menunggu Pembayaran).
 
 ⚽ *Detail Booking:*
-Lapangan: ${newBooking.field.name}
-Tanggal: ${date.toLocaleDateString('id-ID')}
+Tanggal: ${date.toLocaleDateString("id-ID")}
 Jam: ${startTime} - ${endTime}
-Total: *Rp ${totalPrice.toLocaleString('id-ID')}*
+Total: *Rp ${totalPrice.toLocaleString("id-ID")}*
 
 💳 *Silakan Transfer ke:*
 BCA: 1234567890 (a.n Sport Center)
-Sejumlah: Rp ${totalPrice.toLocaleString('id-ID')}
+Sejumlah: Rp ${totalPrice.toLocaleString("id-ID")}
 
 *PENTING:*
 Balas pesan ini dengan mengirimkan BUKTI TRANSFER agar status booking menjadi CONFIRMED.
@@ -55,23 +48,19 @@ Balas pesan ini dengan mengirimkan BUKTI TRANSFER agar status booking menjadi CO
 
   await sendWhatsApp(customerPhone, userMessage);
 
-  // B. Kirim WA ke ADMIN (Laporan Order Baru)
   const adminMessage = `
 🔔 *BOOKING BARU MASUK!*
 
 Pelanggan: ${customerName}
 WA: ${customerPhone}
-Jadwal: ${date.toLocaleDateString('id-ID')} (${startTime} - ${endTime})
-Lapangan: ${newBooking.field.name}
-Total: Rp ${totalPrice.toLocaleString('id-ID')}
+Jadwal: ${date.toLocaleDateString("id-ID")} (${startTime} - ${endTime})
+Total: Rp ${totalPrice.toLocaleString("id-ID")}
 Status: Menunggu Verifikasi
 
 Segera cek dashboard admin!
   `.trim();
 
   await sendWhatsApp(ADMIN_PHONE, adminMessage);
-
-  // -----------------------------------
 
   revalidatePath("/");
   revalidatePath("/admin");

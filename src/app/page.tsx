@@ -15,16 +15,14 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden">
-      {/* 1. NAVBAR - Responsif z-index dan padding */}
-      <nav className="fixed top-0 z-[100] w-full border-b border-gray-200 bg-white backdrop-blur-md">
+      <nav className="fixed top-0 z-100 w-full border-b border-gray-200 bg-white backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4 py-2 md:py-0">
           <Link href="/" className="flex items-center space-x-2">
             <span className="self-center text-2xl font-extrabold whitespace-nowrap text-white tracking-tighter">
               <Image
                 src={HLogo}
                 alt="SETIA MINISOCCER Logo"
-                // Logo lebih kecil di HP (w-40) dan normal di Desktop (md:w-60)
-                className="w-40 md:w-60 ms-[-20px] md:ms-[-37px]"
+                className="w-40 md:w-60 -ms-5 md:ms-[-37px]"
               />
             </span>
           </Link>
@@ -39,12 +37,11 @@ export default async function Home() {
         </div>
       </nav>
 
-      {/* 2. HERO SECTION - Stack vertikal di HP, Horizontal di Desktop */}
       <section className="flex flex-col md:flex-row items-center justify-center min-h-screen max-w-7xl mx-auto pt-20 md:pt-0">
         <div className="px-6 md:px-4 mt-8 md:mt-16 w-full md:w-1/2 text-center md:text-left">
           <h1 className="mb-4 md:mb-6 text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight text-gray-400 drop-shadow-lg">
             SETIA <br />{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-500">
               MINI SOCCER
             </span>
           </h1>
@@ -64,7 +61,6 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* Gambar Hero - Hidden di HP agar fokus ke teks, Muncul di Desktop */}
         <div className="w-full md:w-1/2 flex justify-center mt-8 md:mt-0">
           <Image
             src={HImg}
@@ -78,7 +74,6 @@ export default async function Home() {
 
       <WhyChooseUs />
 
-      {/* 4. LIVE SCHEDULE */}
       <section
         id="live-schedule"
         className="py-16 md:py-20 bg-white relative -mt-10 md:-mt-20 z-20"
@@ -94,17 +89,14 @@ export default async function Home() {
         <UserSchedule fields={fields} />
       </section>
 
-      {/* 5. BOOKING AREA */}
       <FacilitiesCarousel />
 
-      {/* FOOTER */}
       <footer className="bg-white text-gray-600 py-12 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
           <div className="md:col-span-2 flex flex-col items-center md:items-start">
             <Image
               src={HLogo}
               alt="SETIA MINISOCCER Logo"
-              // Sesuaikan posisi logo di footer agar rapi di HP
               className="w-48 md:w-60 mb-4 md:mb-0 md:ms-[-43px]"
             />
             <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
@@ -163,7 +155,7 @@ export default async function Home() {
         href="https://wa.me/6285117692051?text=Halo%20Admin,%20saya%20tertarik%20booking%20lapangan."
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-[100] group"
+        className="fixed bottom-6 right-6 z-100 group"
         aria-label="Chat via WhatsApp"
       >
         <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-white text-gray-800 text-xs font-bold px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">

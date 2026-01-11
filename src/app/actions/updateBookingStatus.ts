@@ -6,14 +6,12 @@ import { revalidatePath } from "next/cache";
 
 export async function updateBookingStatus(bookingId: string, newStatus: string) {
   try {
-    // 1. Update Database
     const booking = await prisma.booking.update({
       where: { id: bookingId },
       data: { status: newStatus },
       include: { field: true }
     });
 
-    // 2. Kirim Notifikasi WA (Hanya jika status jadi SELESAI/CONFIRMED)
     if (newStatus === "CONFIRMED") {
       const successMessage = `
 ✅ *PEMBAYARAN DITERIMA!*
@@ -22,7 +20,6 @@ Halo Kak ${booking.customerName}, booking Anda sudah terkonfirmasi.
 
 🎫 *Tiket Masuk:*
 ID Booking: ${booking.id.substring(0, 8)}...
-Lapangan: ${booking.field.name}
 Tanggal: ${new Date(booking.date).toLocaleDateString('id-ID')}
 Jam: ${booking.startTime} - ${booking.endTime}
 Harga: Rp ${booking.totalPrice?.toLocaleString('id-ID')}
@@ -31,7 +28,6 @@ Silakan tunjukkan pesan ini kepada petugas di lokasi.
 Selamat bermain! ⚽🔥
       `.trim();
 
-      // Pastikan ada nomor HP sebelum kirim
       if (booking.customerPhone) {
         await sendWhatsApp(booking.customerPhone, successMessage);
       }

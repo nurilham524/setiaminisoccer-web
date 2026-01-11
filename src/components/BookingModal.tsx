@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import Swal from "sweetalert2";
 
 type BookingModalProps = {
@@ -19,7 +20,6 @@ export default function BookingModal({
   open,
   onClose,
   fieldId,
-  // fieldName,
   date,
   times,
   price,
@@ -32,6 +32,7 @@ export default function BookingModal({
   const [paymentMethod, setPaymentMethod] = useState<"qris" | "transfer">(
     "qris"
   );
+  const [showQrisModal, setShowQrisModal] = useState(false);
 
   if (!open) return null;
 
@@ -45,17 +46,15 @@ export default function BookingModal({
       });
       return;
     }
-    // Pindah ke step pembayaran
     setStep("payment");
   };
 
   const handleConfirmPayment = async () => {
     setIsSubmitting(true);
     try {
-      // Create single booking dengan range waktu
-      const startTime = times[0]; // Jam pertama
+      const startTime = times[0];
       const lastHour = parseInt(times[times.length - 1].split(":")[0]);
-      const endTime = `${(lastHour + 1).toString().padStart(2, "0")}:00`; // Jam terakhir + 1
+      const endTime = `${(lastHour + 1).toString().padStart(2, "0")}:00`;
 
       const response = await fetch("/api/booking", {
         method: "POST",
@@ -125,7 +124,6 @@ export default function BookingModal({
           </button>
         </div>
 
-        {/* STEP 1: BOOKING FORM */}
         {step === "booking" && (
           <>
             <div className="space-y-3 mb-6 pt-3 px-4">
@@ -193,11 +191,9 @@ export default function BookingModal({
           </>
         )}
 
-        {/* STEP 2: PAYMENT */}
         {step === "payment" && (
           <>
             <div className="px-4 pt-4">
-              {/* Summary Booking */}
               <div className="mb-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-xs text-gray-600">
                   <span className="font-semibold">Atas Nama:</span> {name}
@@ -211,7 +207,6 @@ export default function BookingModal({
                 </p>
               </div>
 
-              {/* Payment Method Selection */}
               <div className="mb-4">
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Pilih Metode Pembayaran:
@@ -232,7 +227,6 @@ export default function BookingModal({
                     <p className="text-xs text-gray-500">Scan QR Code</p>
                   </button>
 
-                  {/* Bank Transfer Option */}
                   <button
                     onClick={() => setPaymentMethod("transfer")}
                     className={`w-full p-3 rounded-lg border-2 transition text-left ${
@@ -249,21 +243,19 @@ export default function BookingModal({
                 </div>
               </div>
 
-              {/* Payment Details */}
               {paymentMethod === "qris" && (
                 <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <p className="text-xs font-semibold text-gray-600 mb-3">
-                    SCAN QR CODE DIBAWAH INI:
+                    PEMBAYARAN DENGAN QRIS
                   </p>
-                  <div className="bg-white p-4 rounded-lg flex items-center justify-center">
-                    <div className="w-40 h-40 bg-gray-200 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
-                      <p className="text-xs text-gray-400 text-center">
-                        <img src="/qris.jpeg" alt="QRIS" className="w-full h-full object-contain" />
-                      </p>
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => setShowQrisModal(true)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+                  >
+                    📱 Tampilkan QRIS Code
+                  </button>
                   <p className="text-xs text-gray-500 mt-3 text-center">
-                    Scan QR Code menggunakan e-wallet atau banking app Anda
+                    Klik tombol di atas untuk menampilkan QR Code pembayaran
                   </p>
                 </div>
               )}
@@ -328,6 +320,63 @@ export default function BookingModal({
           </>
         )}
       </div>
+
+      {/* QRIS MODAL */}
+      {showQrisModal && (
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm relative animate-fadeIn">
+            <button
+              onClick={() => setShowQrisModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition"
+              aria-label="Tutup"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="currentColor"
+                viewBox="0 0 256 256"
+              >
+                <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
+              </svg>
+            </button>
+
+            <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
+              📱 SCAN QRIS CODE
+            </h3>
+            
+            <div className="bg-white p-4 rounded-xl flex items-center justify-center border-2 border-gray-200 mb-4">
+              <Image 
+                src="/qris.jpeg" 
+                alt="QRIS" 
+                width={300} 
+                height={300}
+                className="object-cover rounded-lg"
+              />
+            </div>
+
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4">
+              <p className="text-xs text-gray-600">
+                <span className="font-semibold">Total Pembayaran:</span><br />
+                <span className="text-lg font-bold text-blue-600">
+                  Rp {price.toLocaleString("id-ID")}
+                </span>
+              </p>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center mb-4">
+              Scan QR Code menggunakan e-wallet atau banking app Anda untuk melakukan pembayaran
+            </p>
+
+            <button
+              onClick={() => setShowQrisModal(false)}
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg transition"
+            >
+              Selesai
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -26,7 +26,6 @@ export default function LoginPage() {
         throw new Error(data.error);
       }
 
-      // Jika sukses, redirect ke dashboard admin
       router.push("/admin");
       router.refresh(); 
 

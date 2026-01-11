@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET promo by ID
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -26,7 +25,6 @@ export async function GET(
   }
 }
 
-// PUT update promo
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -34,27 +32,18 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const {
-      title,
-      description,
-      emoji,
-      borderColor,
-      buttonColor,
-      buttonHoverColor,
-      whatsappText,
-    } = body;
+    const { title } = body;
+
+    if (!title) {
+      return NextResponse.json(
+        { error: "Judul promo diperlukan" },
+        { status: 400 }
+      );
+    }
 
     const promo = await prisma.promo.update({
       where: { id },
-      data: {
-        ...(title && { title }),
-        ...(description && { description }),
-        ...(emoji && { emoji }),
-        ...(borderColor && { borderColor }),
-        ...(buttonColor && { buttonColor }),
-        ...(buttonHoverColor && { buttonHoverColor }),
-        ...(whatsappText && { whatsappText }),
-      },
+      data: { title },
     });
 
     return NextResponse.json(promo);
@@ -67,7 +56,6 @@ export async function PUT(
   }
 }
 
-// DELETE promo
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

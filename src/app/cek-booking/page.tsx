@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 
-// Format Helper
 const formatDate = (date: string) => new Intl.DateTimeFormat("id-ID", { dateStyle: "full" }).format(new Date(date));
 const formatRupiah = (num: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(num);
 
@@ -30,7 +29,7 @@ export default function CheckBookingPage() {
 
       const data = await res.json();
       setBookings(data);
-      setHasSearched(true); // Menandakan pencarian selesai
+      setHasSearched(true);
     } catch (error) {
       alert("Terjadi kesalahan sistem");
     } finally {

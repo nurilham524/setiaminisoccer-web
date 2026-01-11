@@ -8,7 +8,6 @@ export default function AdminNavbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Tutup dropdown saat klik di luar
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -50,7 +49,7 @@ export default function AdminNavbar() {
                 <p className="text-xs text-gray-500">Super User</p>
               </div>
               {/* Avatar */}
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center rounded-full font-bold shadow-lg hover:shadow-xl transition cursor-pointer">
+              <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center rounded-full font-bold shadow-lg hover:shadow-xl transition cursor-pointer">
                 AD
               </div>
             </button>

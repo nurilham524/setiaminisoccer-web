@@ -1,12 +1,19 @@
-// src/utils/fonnte.ts
-
 export async function sendWhatsApp(target: string, message: string) {
   try {
-    const response = await fetch('https://api.fonnte.com/send', {
-      method: 'POST',
+    const token = process.env.FONNTE_TOKEN;
+
+    if (!token) {
+      console.error("FONNTE_TOKEN tidak ditemukan di environment variables!");
+      return { status: false, error: "Token not configured" };
+    }
+
+    console.log(`📤 Mengirim WA ke: ${target}`);
+
+    const response = await fetch("https://api.fonnte.com/send", {
+      method: "POST",
       headers: {
-        'Authorization': process.env.FONNTE_TOKEN || '', // Pastikan ada di .env
-        'Content-Type': 'application/json',
+        Authorization: token,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         target: target,
@@ -15,10 +22,20 @@ export async function sendWhatsApp(target: string, message: string) {
     });
 
     const result = await response.json();
-    console.log(`Fonnte Send to ${target}:`, result.status ? "Success" : "Failed");
+    console.log(`📱 Fonnte Response untuk ${target}:`, JSON.stringify(result));
+
+    if (!result.status) {
+      console.error(
+        `❌ Gagal kirim WA ke ${target}:`,
+        result.reason || result.detail || "Unknown error"
+      );
+    } else {
+      console.log(`✅ Berhasil kirim WA ke ${target}`);
+    }
+
     return result;
   } catch (error) {
-    console.error("Fonnte Error:", error);
-    return null; // Jangan throw error agar sistem booking tidak crash jika WA gagal
+    console.error("❌ Fonnte Error:", error);
+    return { status: false, error: String(error) };
   }
 }

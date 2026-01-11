@@ -1,20 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma"; // Pastikan path ini benar (sesuaikan jika di src/lib)
+import { prisma } from "@/lib/prisma";
 import BookingForm from "@/components/BookingForm";
 
-// Support Next.js 15 (Params is Promise)
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default async function Page({ params }: PageProps) {
-  // 1. Ambil ID dengan await (Next.js 15)
   const resolvedParams = await params;
   const { id } = resolvedParams;
-
-  // 2. Fetch data (ID sebagai String)
   const field = await prisma.field.findUnique({
     where: { id },
   });
@@ -28,7 +24,6 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8 relative">
-      {/* Navigasi Back */}
       <div className="mb-6 relative z-10">
         <Link
           href="/"
@@ -39,7 +34,6 @@ export default async function Page({ params }: PageProps) {
       </div>
 
       <div className="grid gap-8 md:grid-cols-3 relative">
-        {/* KOLOM KIRI: Gambar & Info */}
         <div className="md:col-span-2 relative z-10">
           <div className="rounded-xl overflow-hidden shadow-md bg-gray-50 border border-gray-100">
             <Image
@@ -71,9 +65,7 @@ export default async function Page({ params }: PageProps) {
           </div>
         </div>
 
-        {/* KOLOM KANAN: Booking Form */}
         <aside className="md:col-span-1 relative z-20">
-          {/* Container Form Bersih & Elegan */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg sticky top-6">
             <div className="border-b pb-4 mb-4">
               <h2 className="text-xl font-bold text-gray-900">

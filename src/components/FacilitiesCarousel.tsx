@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useKeenSlider } from "keen-slider/react";
-import "keen-slider/keen-slider.min.css";
 import Image from "next/image";
 import { useEffect } from "react";
 
@@ -88,7 +88,6 @@ export function FacilitiesCarousel() {
       initial: 0,
       mode: "snap",
       rubberband: false,
-      // duration: 300,
       breakpoints: {
         "(min-width: 768px)": {
           slides: { perView: 2, spacing: 16 },
@@ -127,7 +126,7 @@ export function FacilitiesCarousel() {
             {facilities.map((facility) => (
               <div
                 key={facility.id}
-                className="keen-slider__slide flex-shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-200 transition-all duration-300 relative group flex flex-col h-full min-h-[420px]"
+                className="keen-slider__slide shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-200 transition-all duration-300 relative group flex flex-col h-full min-h-[420px]"
               >
                 <div className="relative h-48 sm:h-56 md:h-64 w-full overflow-hidden bg-gray-200">
                   {facility.image ? (

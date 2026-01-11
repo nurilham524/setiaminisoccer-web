@@ -1,14 +1,9 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
-  // Kita hapus 'output' custom agar kembali ke default (node_modules)
-  // Ini memudahkan import nanti cukup: import { PrismaClient } from '@prisma/client'
 }
 
 datasource db {
   provider = "postgresql"
-  // Connection URL is now configured in prisma.config.ts
   url      = env("DATABASE_URL")
 }
 
@@ -19,7 +14,6 @@ model User {
   name      String
   role      String    @default("USER")
   createdAt DateTime  @default(now())
-
   bookings  Booking[]
 }
 
@@ -30,13 +24,12 @@ model Field {
   pricePerHour Int
   description  String?
   imageUrl     String?
-
   bookings     Booking[]
 }
 
 model Booking {
   id            String   @id @default(uuid())
-  userId        String?  // Ubah jadi OPTIONAL (tambah tanda tanya) agar bisa Guest Checkout
+  userId        String? 
   fieldId        String
   date          DateTime
   startTime     String
@@ -44,24 +37,17 @@ model Booking {
   status        String   @default("PENDING")
   totalPrice    Int      @default(0)
   createdAt     DateTime @default(now())
-  
-  // DATA TAMU (Baru)
-  customerName  String?  // Menyimpan nama penyewa (misal: "Budi")
-  customerPhone String?  // Menyimpan WA (misal: "0812...")
-
-  user       User?    @relation(fields: [userId], references: [id]) // Tambah '?' karena userId jadi optional
+  customerName  String? 
+  customerPhone String? 
+  user       User?    @relation(fields: [userId], references: [id])
   field      Field    @relation(fields: [fieldId], references: [id])
 }
 
 model Promo {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  emoji       String
-  borderColor String   @default("border-blue-500")
-  buttonColor String   @default("bg-blue-500")
-  buttonHoverColor String @default("hover:bg-blue-600")
-  whatsappText String  // Text yang dikirim ke WA saat klik
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String   @id @default(uuid())
+  title            String
+  posterImage      String? 
+  whatsappText     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

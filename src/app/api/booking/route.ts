@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma"; // Sesuaikan path
+import { prisma } from "../../../lib/prisma";
+import { sendWhatsApp } from "@/utils/fonnte";
+
+const ADMIN_PHONE = "085656804903";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    // 1. TERIMA DATA BARU (customerName, customerPhone, status)
     const {
       fieldId,
       date,
@@ -16,7 +18,14 @@ export async function POST(request: Request) {
       status = "PENDING",
     } = body;
 
-    if (!fieldId || !date || !startTime || !endTime || !customerName || !customerPhone) {
+    if (
+      !fieldId ||
+      !date ||
+      !startTime ||
+      !endTime ||
+      !customerName ||
+      !customerPhone
+    ) {
       return NextResponse.json(
         { error: "Data tidak lengkap. Nama & WA wajib diisi." },
         { status: 400 }
@@ -26,7 +35,6 @@ export async function POST(request: Request) {
     const bookingDate = new Date(date);
     bookingDate.setHours(0, 0, 0, 0);
 
-    // Cek Bentrok (hanya untuk status CONFIRMED/LUNAS)
     const existingBooking = await prisma.booking.findFirst({
       where: {
         fieldId,
@@ -45,8 +53,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. SIMPAN KE DATABASE (Guest Mode)
-    // Status disimpan sesuai yang dikirim (default PENDING)
     const newBooking = await prisma.booking.create({
       data: {
         fieldId,
@@ -55,11 +61,38 @@ export async function POST(request: Request) {
         endTime,
         totalPrice: price,
         status: status,
-        // Simpan data tamu
         customerName: customerName,
         customerPhone: customerPhone,
       },
     });
+
+    // Kirim notifikasi WA ke pelanggan
+    const userMessage = `
+Halo Kak *${customerName}*! 👋
+Booking Anda berhasil dicatat (Sedang Diproses).
+
+⚽ *Detail Booking:*
+Tanggal: ${bookingDate.toLocaleDateString("id-ID")}
+Jam: ${startTime} - ${endTime}
+Total: *Rp ${price?.toLocaleString("id-ID") || "-"}*
+    `.trim();
+
+    await sendWhatsApp(customerPhone, userMessage);
+
+    // Kirim notifikasi WA ke admin
+    const adminMessage = `
+🔔 *BOOKING BARU MASUK!*
+
+Pelanggan: ${customerName}
+WA: ${customerPhone}
+Jadwal: ${bookingDate.toLocaleDateString("id-ID")} (${startTime} - ${endTime})
+Total: Rp ${price?.toLocaleString("id-ID") || "-"}
+Status: Menunggu Verifikasi
+
+Segera cek dashboard admin!
+    `.trim();
+
+    await sendWhatsApp(ADMIN_PHONE, adminMessage);
 
     return NextResponse.json({ success: true, data: newBooking });
   } catch (error) {

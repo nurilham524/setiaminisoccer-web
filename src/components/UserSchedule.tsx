@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { format, addMinutes, isEqual, parse } from "date-fns";
+import { format, parse } from "date-fns";
 import { id } from "date-fns/locale";
 import { getBookingsByDate } from "@/app/actions/getBookings";
 import BookingModal from "./BookingModal";
@@ -52,11 +52,20 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
     if (selectedDate) {
       const fetchBookings = async () => {
         setLoading(true);
-        const res = await getBookingsByDate(selectedDate);
-        if (res.success && res.data) {
-          setBookings(res.data as unknown as BookingSimple[]);
+        try {
+          const res = await getBookingsByDate(selectedDate);
+          if (res.success && res.data) {
+            setBookings(res.data as unknown as BookingSimple[]);
+          } else {
+            console.error("Failed to fetch bookings:", res.error);
+            setBookings([]);
+          }
+        } catch (error) {
+          console.error("Error fetching bookings:", error);
+          setBookings([]);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       };
       fetchBookings();
     }
@@ -84,7 +93,6 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
     return 0;
   };
 
-  // Refetch bookings after successful booking
   const handleBookingSuccess = async () => {
     if (selectedDate) {
       const res = await getBookingsByDate(selectedDate);
@@ -94,7 +102,6 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
     }
   };
 
-  // Helper: cek apakah array jam berurutan
   function areTimesSequential(times: string[]) {
     if (times.length <= 1) return true;
     const sorted = [...times].sort();
@@ -108,6 +115,11 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4">
+      {fields && fields.length === 0 && !loading && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4 text-yellow-800 text-sm">
+          ⚠️ Tidak ada lapangan yang tersedia. Hubungi admin untuk menambahkan lapangan.
+        </div>
+      )}
       <div className="bg-white rounded-3xl overflow-hidden border border-gray-200 flex flex-col md:flex-row">
         <div className="md:w-1/3 bg-white p-8 flex flex-col items-center justify-center relative overflow-hidden">
           {/* <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div> */}
@@ -171,20 +183,23 @@ export default function UserSchedule({ fields }: { fields: Field[] }) {
               <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin mb-4"></div>
               Memuat ketersediaan...
             </div>
+          ) : fields.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <p className="text-lg font-medium">Tidak ada lapangan tersedia</p>
+              <p className="text-sm text-gray-500 mt-2">Hubungi admin untuk menambahkan lapangan</p>
+            </div>
           ) : (
             <div className="space-y-8">
               {fields.map((field) => (
                 <div
                   key={field.id}
-                  className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition min-h-[320px] flex flex-col"
+                  className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition min-h-80 flex flex-col"
                 >
                   <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2 flex-1">
                     {timeSlots.map((time) => {
                       const isBooked = bookings.some((b) => {
                         if (b.fieldId !== field.id) return false;
                         if (!(b.status === "PENDING" || b.status === "CONFIRMED")) return false;
-                        
-                        // Check apakah time berada dalam range [startTime, endTime)
                         const timeHour = parseInt(time.split(":")[0]);
                         const startHour = parseInt(b.startTime.split(":")[0]);
                         const endHour = parseInt(b.endTime.split(":")[0]);
