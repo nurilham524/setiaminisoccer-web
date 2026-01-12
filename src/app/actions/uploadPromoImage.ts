@@ -1,9 +1,8 @@
-'use server'
+"use server";
 
-import { writeFile, unlink } from 'fs/promises';
-import { join } from 'path';
-import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function uploadPromoImage(
   promoId: string,
@@ -12,44 +11,40 @@ export async function uploadPromoImage(
 ) {
   try {
     const promo = await prisma.promo.findUnique({
-      where: { id: promoId }
+      where: { id: promoId },
     });
 
     if (!promo) {
-      return { success: false, error: 'Promo tidak ditemukan' };
+      return { success: false, error: "Promo tidak ditemukan" };
     }
 
-    if (promo.posterImage) {
-      const oldImagePath = join(process.cwd(), 'public', promo.posterImage);
-      try {
-        await unlink(oldImagePath);
-      } catch (e) {
-        // Skip if file doesn't exist 
-      }
+    // Convert base64 string to Buffer
+    const buffer = Buffer.from(fileBase64, "base64");
+
+    // Upload to Cloudinary under folder 'promo-banner'
+    const uploadResult = await uploadToCloudinary(buffer, "promo-banner");
+
+    if (!uploadResult || !uploadResult.secure_url) {
+      return { success: false, error: "Gagal upload gambar ke Cloudinary" };
     }
 
-    const timestamp = Date.now();
-    const ext = fileName.split('.').pop();
-    const newFileName = `promo-${promoId}-${timestamp}.${ext}`;
-    const filePath = join(process.cwd(), 'public', 'promos', newFileName);
-    const buffer = Buffer.from(fileBase64, 'base64');
-    await writeFile(filePath, buffer);
-    const imagePath = `/promos/${newFileName}`;
+    const imageUrl = uploadResult.secure_url;
+
     const updatedPromo = await prisma.promo.update({
       where: { id: promoId },
-      data: { posterImage: imagePath }
+      data: { posterImage: imageUrl },
     });
 
-    revalidatePath('/admin');
-    revalidatePath('/');
+    revalidatePath("/admin");
+    revalidatePath("/");
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       promo: updatedPromo,
-      imagePath 
+      imageUrl,
     };
   } catch (error) {
-    console.error('Upload Error:', error);
-    return { success: false, error: 'Gagal upload gambar' };
+    console.error("Upload Error:", error);
+    return { success: false, error: "Gagal upload gambar" };
   }
 }

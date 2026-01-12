@@ -29,25 +29,24 @@ model Field {
 
 model Booking {
   id            String   @id @default(uuid())
-  userId        String? 
-  fieldId        String
+  userId        String?
+  fieldId       String
   date          DateTime
   startTime     String
   endTime       String
   status        String   @default("PENDING")
   totalPrice    Int      @default(0)
   createdAt     DateTime @default(now())
-  customerName  String? 
-  customerPhone String? 
-  user       User?    @relation(fields: [userId], references: [id])
-  field      Field    @relation(fields: [fieldId], references: [id])
+  customerName  String?
+  customerPhone String?
+  field         Field    @relation(fields: [fieldId], references: [id])
+  user          User?    @relation(fields: [userId], references: [id])
 }
 
 model Promo {
-  id               String   @id @default(uuid())
-  title            String
-  posterImage      String? 
-  whatsappText     String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id          String   @id @default(uuid())
+  title       String
+  posterImage String?
+  whatsappText String?
+  createdAt   DateTime @default(now())
 }

@@ -1,9 +1,24 @@
 'use server'
 
-import { unlink } from 'fs/promises';
-import { join } from 'path';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import cloudinary from '@/lib/cloudinary';
+
+function extractCloudinaryPublicId(url: string) {
+  try {
+    const u = new URL(url);
+    const idx = u.pathname.indexOf('/upload/');
+    if (idx === -1) return null;
+    let rest = u.pathname.substring(idx + '/upload/'.length);
+    // remove version if present e.g. v123456789/
+    rest = rest.replace(/^v\d+\//, '');
+    // remove file extension
+    rest = rest.replace(/\.[^/.]+$/, '');
+    return rest.startsWith('/') ? rest.substring(1) : rest;
+  } catch (e) {
+    return null;
+  }
+}
 
 export async function deletePromo(promoId: string) {
   try {
@@ -16,14 +31,17 @@ export async function deletePromo(promoId: string) {
     }
 
     if (promo.posterImage) {
-      const imagePath = join(process.cwd(), 'public', promo.posterImage);
-      try {
-        await unlink(imagePath);
-      } catch (e) {
-        // Skip
+      const publicId = extractCloudinaryPublicId(promo.posterImage);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+        } catch (e) {
+          // log and continue
+          console.warn('Cloudinary delete failed:', e);
+        }
       }
     }
-    
+
     await prisma.promo.delete({
       where: { id: promoId }
     });
